@@ -39,3 +39,23 @@ MarkupSafe==1.0
 Werkzeug==0.14.1
 (movie) λ
 ```
+
+## 前后台项目目录结构
+
+project_name
+    ├─manage.py                 # 入口启动脚本
+    └─app                       # 项目APP
+        ├─`__init__.py`         # 初始化文件
+        ├─models.py             # 数据模型文件
+        ├─admin                 # 后台模块
+        |    ├─`__init__.py`    # 初始化脚本
+        |    ├─views.py         # 视图处理文件
+        |    └─forms.py         # 表单处理文件
+        ├─home                  # 前台模块
+        |    ├─`__init__.py`    # 初始化脚本
+        |    ├─views.py         # 视图处理文件
+        |    └─forms.py         # 表单处理文件
+        ├─static                # 静态目录
+        └─templates             # 模板文件
+            ├─admin             # 后台模板
+            └─home              # 前台模板
