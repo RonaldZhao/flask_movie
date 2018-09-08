@@ -74,3 +74,21 @@ project_name
 - 构建大型应用
 - 优化项目结构
 - 增强可读性, 易于维护
+
+## 会员及会员登录日志数据模型设计
+
+1. 首先安装数据库连接依赖包: `pip install flask-sqlalchemy`
+
+2. 然后安装`MySQL`数据库驱动: `pip install PyMySQL`
+
+3. 定义MySQL数据库连接
+
+```python
+from flask_sqlalchemy import SQLAlchemy
+from flask import Flask
+
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:root@localhost/movie'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
+db = SQLAlchemy(app)
+```
