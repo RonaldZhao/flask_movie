@@ -5,8 +5,11 @@
 ## 开发环境
 
 1. OS: windows10 pro
+
 2. Python: 3.6.6
+
 3. 虚拟化环境: virtualenv
+
 4. 代码编辑器: Atom
 
 ## 创建虚拟化环境
@@ -46,14 +49,14 @@ Werkzeug==0.14.1
 project_name
     ├─manage.py                 # 入口启动脚本
     └─app                       # 项目APP
-        ├─`__init__.py`         # 初始化文件
+        ├─__init__.py           # 初始化文件
         ├─models.py             # 数据模型文件
         ├─admin                 # 后台模块
-        |    ├─`__init__.py`    # 初始化脚本
+        |    ├─__init__.py      # 初始化脚本
         |    ├─views.py         # 视图处理文件
         |    └─forms.py         # 表单处理文件
         ├─home                  # 前台模块
-        |    ├─`__init__.py`    # 初始化脚本
+        |    ├─__init__.py      # 初始化脚本
         |    ├─views.py         # 视图处理文件
         |    └─forms.py         # 表单处理文件
         ├─static                # 静态目录
@@ -71,8 +74,11 @@ project_name
 ### 蓝图的作用?
 
 - 将不同的功能模块化
+
 - 构建大型应用
+
 - 优化项目结构
+
 - 增强可读性, 易于维护
 
 ## 会员及会员登录日志数据模型设计
@@ -92,3 +98,11 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://root:root@localhost/movie'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
 db = SQLAlchemy(app)
 ```
+
+## 前台布局搭建
+
+1. 静态文件引入: `{{ url_for('static', filename='文件路径') }}`
+
+2. 定义路由: {{ url_for('模块名.视图名', 变量=参数) }}
+
+3. 定义数据块: {% block 数据块名称 %}...{% endblock %}
