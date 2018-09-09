@@ -106,3 +106,87 @@ db = SQLAlchemy(app)
 2. 定义路由: {{ url_for('模块名.视图名', 变量=参数) }}
 
 3. 定义数据块: {% block 数据块名称 %}...{% endblock %}
+
+## 用户登录页面搭建
+
+### 登录
+
+```python
+@home.route('/login/')
+def login():
+    return render_template('home/login.html')
+
+```
+
+### 退出
+
+```python
+@home.route('/logout/')
+def logout():
+    return redirect(url_for('home.login'))
+
+```
+
+## 用户注册页面搭建
+
+```python
+@home.route('/register/')
+def register():
+    return render_template('home/register.html')
+
+```
+
+## 用户个人中心页面搭建
+
+- 用户个人中心: `@home.route('/user/')`
+- 修改密码: `@home.route('/pwd/')`
+- 评论记录: `@home.route('/comments/')`
+- 登录日志: `@home.route('/loginlog/')`
+- 收藏电影: `@home.route('/moviecol/')`
+
+## 电影列表页面搭建
+
+### 列表
+
+```python
+@home.route('/')
+def inddex():
+    return render_template('home/index.html')
+
+```
+
+### 动画
+
+```python
+@home.route('/animation/')
+def animation():
+    return render_template('home/animation.html')
+
+```
+
+## 电影搜索页面搭建
+
+```python
+@home.route('/search/')
+def search():
+    return render_template('home/search.html')
+
+```
+
+## 电影详情页面搭建
+
+```python
+@home.route('/play/')
+def play():
+    return render_template('home/play.html')
+
+```
+
+## 404页面搭建
+
+```python
+@app.errorhandler(404)
+def page_not_found():
+    return render_template('common/404.html'), 404
+
+```
