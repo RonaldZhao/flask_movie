@@ -1,16 +1,7 @@
 # 数据模型文件
 from datetime import datetime
 
-from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
-import pymysql
-from werkzeug.security import generate_password_hash
-
-app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:123456@localhost/movie'  # 用于连接数据库
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True  # 使Flask-SQLAlchemy追踪对象的修改并且发送信号
-
-db = SQLAlchemy(app)
+from app import db
 
 
 # 会员数据模型
@@ -154,6 +145,10 @@ class Admin(db.Model):
     admin_logs = db.relationship('AdminLog', backref='admin')  # 管理员登录日志外键关联
     oplogs = db.relationship('OpLog', backref='admin')  # 操作日志外键关联
 
+    def check_pwd(self, pwd):
+        from werkzeug.security import check_password_hash
+        return check_password_hash(self.pwd, pwd)
+
     def __repr__(self):
         return '<Admin %r>' % self.name
 
@@ -182,14 +177,16 @@ class OpLog(db.Model):
     def __repr__(self):
         return '<OpLog %r>' % self.id
 
-
+"""
 if __name__ == '__main__':
-    # db.create_all()
-    """
+    db.create_all()
+
     role = Role(name='超级管理员', auths='')
     db.session.add(role)
     db.session.commit()
-    """
+
+    from werkzeug.security import generate_password_hash
     admin = Admin(name='ronaldzhao', pwd=generate_password_hash('ronaldzhao'), is_super=0, role_id=1)
     db.session.add(admin)
     db.session.commit()
+"""

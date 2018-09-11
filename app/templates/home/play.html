@@ -187,18 +187,14 @@
 <!--播放页面-->
 <script src="{{ url_for('static', filename='jwplayer/jwplayer.js') }}"></script>
 <script>
-var ue = UE.getEditor('input_content',{
-    toolbars: [
-        ['fullscreen', 'emotion', 'link']
-    ],
-    initialFrameWidth:"100%",
-    initialFrameHeight:"100",
-});
-</script>
-<script type="text/javascript">
+    var ue = UE.getEditor('input_content',{
+        toolbars: [
+            ['fullscreen', 'emotion', 'link']
+        ],
+        initialFrameWidth:"100%",
+        initialFrameHeight:"100",
+    });
 	jwplayer.key = "P9VTqT/X6TSP4gi/hy1wy23BivBhjdzVjMeOaQ==";
-</script>
-<script type="text/javascript">
 	jwplayer("moviecontainer").setup({
 		flashplayer: "{{ url_for('static', filename='jwplayer/jwplayer.flash.swf') }}",
 		playlist: [{
