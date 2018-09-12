@@ -74,11 +74,15 @@ def tag_add():
     return render_template('admin/tag_add.html', form=form)
 
 
-# 标签列表
-@admin.route('/tag/list/')
+# 标签列表, 分页显示
+@admin.route('/tag/list/<int:page>/', methods=['GET'])
 @admin_login_required
-def tag_list():
-    return render_template('admin/tag_list.html')
+def tag_list(page=None):
+    if page is None:
+        page = 1
+    # TODO: 下面的按时间排序的方式
+    page_data = Tag.query.order_by(Tag.add_time.desc()).paginate(page=page, per_page=10)
+    return render_template('admin/tag_list.html', page_data=page_data)
 
 
 # 添加电影
