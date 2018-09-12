@@ -3,8 +3,9 @@ from flask import render_template, redirect, url_for, flash, session, request
 from functools import wraps
 
 from . import admin
-from app.admin.forms import LoginForm
-from app.models import Admin
+from app import db
+from app.admin.forms import LoginForm, TagForm
+from app.models import Admin, Tag
 
 
 # 访问控制装饰器
@@ -54,11 +55,23 @@ def pwd():
     return render_template('admin/pwd.html')
 
 
-# 编辑标签
-@admin.route('/tag/add/')
+# 添加标签
+@admin.route('/tag/add/', methods=['GET', 'POST'])
 @admin_login_required
 def tag_add():
-    return render_template('admin/tag_add.html')
+    form = TagForm()
+    if form.validate_on_submit():
+        data = form.data
+        tag = Tag.query.filter_by(name=data['name']).count()
+        if tag == 1:
+            flash('标签"{0}"已经存在!'.format(data['name']), 'err')
+            return redirect(url_for('admin.tag_add'))
+        tag = Tag(name=data['name'])
+        db.session.add(tag)
+        db.session.commit()
+        flash('标签"{0}"添加成功!'.format(data['name']), 'ok')
+        return redirect(url_for('admin.tag_add'))
+    return render_template('admin/tag_add.html', form=form)
 
 
 # 标签列表
