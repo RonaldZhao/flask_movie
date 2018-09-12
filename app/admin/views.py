@@ -74,6 +74,29 @@ def tag_add():
     return render_template('admin/tag_add.html', form=form)
 
 
+# 修改标签
+@admin.route('/tag/edit/<int:id>/', methods=['GET', 'POST'])
+@admin_login_required
+def tag_edit(id=None):
+    # TODO: 修改添加时间为修改时间
+    tag = Tag.query.get_or_404(id)
+    form = TagForm()
+    if form.validate_on_submit():
+        data = form.data
+        if data['name'] == tag.name:
+            flash('标签"{0}"未发生修改!'.format(data['name']), 'err')
+            return redirect(url_for('admin.tag_edit', id=id))
+        if Tag.query.filter_by(name=data['name']).count() == 1:
+            flash('标签"{0}"已经存在!'.format(data['name']), 'err')
+            return redirect(url_for('admin.tag_edit', id=id))
+        flash('标签"{0}"已经被修改为"{1}"!'.format(tag.name, data['name']), 'ok')
+        tag.name = data['name']
+        db.session.add(tag)
+        db.session.commit()
+        return redirect(url_for('admin.tag_edit', id=id))
+    return render_template('admin/tag_edit.html', form=form, tag=tag)
+
+
 # 标签列表, 分页显示
 @admin.route('/tag/list/<int:page>/', methods=['GET'])
 @admin_login_required
@@ -83,6 +106,18 @@ def tag_list(page=None):
     # TODO: 下面的按时间排序的方式
     page_data = Tag.query.order_by(Tag.add_time.desc()).paginate(page=page, per_page=10)
     return render_template('admin/tag_list.html', page_data=page_data)
+
+
+# 删除标签
+@admin.route('/tag/delete/<int:id>/', methods=['GET'])
+@admin_login_required
+def tag_delete(id=None):
+    if id:
+        tag = Tag.query.filter_by(id=id).first_or_404()
+        db.session.delete(tag)
+        db.session.commit()
+        flash('标签"{0}"删除成功!'.format(tag.name), 'ok')
+    return redirect(url_for('admin.tag_list', page=1))
 
 
 # 添加电影
