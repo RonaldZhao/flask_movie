@@ -114,7 +114,7 @@ def tag_edit(id=None):
 def tag_list(page=None):
     if page is None:
         page = 1
-    # TODO: 下面的按时间排序的方式
+    # TODO: 下面的按时间排序的方式在当时间相同的时候可能会有显示遗漏问题
     page_data = Tag.query.order_by(Tag.add_time.desc()).paginate(page=page, per_page=10)
     return render_template('admin/tag_list.html', page_data=page_data)
 
@@ -167,11 +167,30 @@ def movie_add():
     return render_template('admin/movie_add.html', form=form)
 
 
-# 电影列表
-@admin.route('/movie/list/')
+# 删除电影
+@admin.route('/movie/delete/<int:id>/', methods=['GET'])
 @admin_login_required
-def movie_list():
-    return render_template('admin/movie_list.html')
+def movie_delete(id=None):
+    if id:
+        movie = Movie.query.filter_by(id=id).first_or_404()
+        db.session.delete(movie)
+        db.session.commit()
+        flash('电影"{0}"删除成功!'.format(movie.title), 'ok')
+    return redirect(url_for('admin.movie_list', page=1))
+
+
+# 电影列表
+@admin.route('/movie/list/<int:page>/', methods=['GET'])
+@admin_login_required
+def movie_list(page=None):
+    if page is None:
+        page = 1
+    # TODO: 下面的按时间排序的方式在当时间相同的时候可能会有显示遗漏问题
+    page_data = Movie.query.join(Tag).filter(
+        Tag.id==Movie.tag_id
+    ).order_by(
+        Movie.add_time.desc()).paginate(page=page, per_page=10)
+    return render_template('admin/movie_list.html', page_data=page_data)
 
 
 # 添加上映预告
