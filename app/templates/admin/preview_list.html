@@ -1,4 +1,5 @@
 {% extends 'admin/admin.html' %}
+{% import 'ui/admin_page.html' as pg %}
 
 {% block content %}
 <section class="content-header">
@@ -16,17 +17,21 @@
                     <h3 class="box-title">预告列表</h3>
                     <div class="box-tools">
                         <div class="input-group input-group-sm" style="width: 150px;">
-                            <input type="text" name="table_search" class="form-control pull-right"
-                                   placeholder="请输入关键字...">
-
+                            <input type="text" name="table_search" class="form-control pull-right" placeholder="请输入关键字...">
                             <div class="input-group-btn">
-                                <button type="submit" class="btn btn-default"><i class="fa fa-search"></i>
-                                </button>
+                                <button type="submit" class="btn btn-default"><i class="fa fa-search"></i></button>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="box-body table-responsive no-padding">
+                    {% for msg in get_flashed_messages(category_filter=['ok']) %}
+                    <div class="alert alert-success alert-dismissible">
+                        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                        <h4><i class="icon fa fa-check"></i>非常棒!</h4>
+                        {{ msg }}
+                    </div>
+                    {% endfor %}
                     <table class="table table-hover">
                         <tbody>
                         <tr>
@@ -36,24 +41,25 @@
                             <th>添加时间</th>
                             <th>操作事项</th>
                         </tr>
+                        {% for preview in page_data.items %}
                         <tr>
-                            <td>1</td>
-                            <td>环太平洋</td>
+                            <td>{{ preview.id }}</td>
+                            <td>{{ preview.title }}</td>
                             <td>
-                                <img data-src="holder.js/140x64?random=yes" class="img-responsive center-block" alt="">
+                                <img src="{{ url_for('static', filename='uploads/'+preview.logo) }}" class="img-responsive center-block" style="width:400px;" alt="">
                             </td>
-                            <td>2017-06-01</td>
+                            <td>{{ preview.add_time }}</td>
                             <td>
-                                <a class="label label-success">编辑</a>
-                                &nbsp;
-                                <a class="label label-danger">删除</a>
+                                <a href="{{ url_for('admin.preview_edit', id=preview.id) }}" class="label label-success" style="margin-right:5px;">编辑</a>
+                                <a href="{{ url_for('admin.preview_delete', id=preview.id) }}" class="label label-danger" style="margin-left:5px;">删除</a>
                             </td>
                         </tr>
+                        {% endfor %}
                         </tbody>
                     </table>
                 </div>
                 <div class="box-footer clearfix">
-                    <ul class="pagination pagination-sm no-margin pull-right">
+                    <!-- <ul class="pagination pagination-sm no-margin pull-right">
                         <li><a href="#">首页</a></li>
                         <li><a href="#">上一页</a></li>
                         <li><a href="#">1</a></li>
@@ -61,7 +67,8 @@
                         <li><a href="#">3</a></li>
                         <li><a href="#">下一页</a></li>
                         <li><a href="#">尾页</a></li>
-                    </ul>
+                    </ul> -->
+                    {{ pg.page(page_data, 'admin.preview_list') }}
                 </div>
             </div>
         </div>

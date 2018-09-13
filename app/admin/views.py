@@ -9,8 +9,8 @@ from werkzeug.utils import secure_filename
 
 from . import admin
 from app import db, app
-from app.admin.forms import LoginForm, TagForm, MovieForm
-from app.models import Admin, Tag, Movie
+from app.admin.forms import LoginForm, TagForm, MovieForm, PreviewForm
+from app.models import Admin, Tag, Movie, Preview, User
 
 
 # 访问控制装饰器
@@ -180,6 +180,7 @@ def movie_delete(id=None):
         movie = Movie.query.filter_by(id=id).first_or_404()
         db.session.delete(movie)
         db.session.commit()
+        # TODO: 删除其资源
         flash('电影"{0}"删除成功!'.format(movie.title), 'ok')
 
     return redirect(url_for('admin.movie_list', page=1))
@@ -285,17 +286,99 @@ def movie_edit(id=None):
 
 
 # 添加上映预告
-@admin.route('/preview/add/')
+@admin.route('/preview/add/', methods=['GET', 'POST'])
 @admin_login_required
 def preview_add():
-    return render_template('admin/preview_add.html')
+    form = PreviewForm()
+    if form.validate_on_submit():
+        data = form.data
+        preview_count = Preview.query.filter_by(title=data['title']).count()
+
+        if preview_count >= 1:
+            flash('预告片"{0}"已经存在!'.format(data['title']), 'err')
+            return redirect(url_for('admin.preview_add'))
+
+        file_logo = secure_filename(form.logo.data.filename)
+
+        if not os.path.exists(app.config['UP_DIR']):
+            os.makedirs(app.config['UP_DIR'])
+            os.chmod(app.config['UP_DIR'], 'rw')
+
+        logo = change_filename(file_logo)
+        form.logo.data.save(app.config['UP_DIR'] + logo)
+        preview = Preview(
+            title=data['title'],
+            logo=logo
+        )
+        db.session.add(preview)
+        db.session.commit()
+        flash('电影预告"{0}"添加成功!'.format(preview.title), 'ok')
+        return redirect(url_for('admin.preview_add'))
+    return render_template('admin/preview_add.html', form=form)
+
+
+# 删除预告
+@admin.route('/preview/delete/<int:id>/', methods=['GET'])
+@admin_login_required
+def preview_delete(id=None):
+    if id:
+        preview = Preview.query.get_or_404(int(id))
+        old_logo = preview.logo
+        db.session.delete(preview)
+        db.session.commit()
+        # 同时删除其封面图
+        os.remove(app.config['UP_DIR'] + old_logo)
+        flash('影片预告"{0}"删除成功!'.format(preview.title), 'ok')
+
+    return redirect(url_for('admin.preview_list', page=1))
 
 
 # 上映预告列表
-@admin.route('/preview/list/')
+@admin.route('/preview/list/<int:page>/')
 @admin_login_required
-def preview_list():
-    return render_template('admin/preview_list.html')
+def preview_list(page=None):
+    if not page:
+        page = 1
+    page_data = Preview.query.order_by(Preview.add_time.desc()).paginate(page=page, per_page=10)
+    return render_template('admin/preview_list.html', page_data=page_data)
+
+
+# 修改预告
+@admin.route('/preview/edit/<int:id>/', methods=['GET', 'POST'])
+@admin_login_required
+def preview_edit(id=None):
+    # TODO: 修改添加时间为修改时间
+    preview = Preview.query.get_or_404(int(id))
+    form = PreviewForm()
+    form.logo.validators.clear()
+    if form.validate_on_submit():
+        data = form.data
+        # TODO: 在前端判断数据是否发生了修改, 发生修改了再提交到服务器处理, 减轻服务器压力
+        if data['title'] == preview.title and type(form.logo.data) == str:
+            flash('亲, 没改信息就不要点保存了嘛!', 'err')
+            return redirect(url_for('admin.preview_edit', id=id))
+        if data['title'] != preview.title and Preview.query.filter_by(title=data['title']).count() == 1:
+            flash('影片预告"{0}"已经存在!'.format(data['title']), 'err')
+            return redirect(url_for('admin.preview_edit', id=id))
+
+        changed = False
+        old_logo = preview.logo
+        if type(form.logo.data) != str and form.logo.data.filename != "":
+            file_logo = secure_filename(form.logo.data.filename)
+            preview.logo = change_filename(file_logo)
+            form.logo.data.save(app.config['UP_DIR'] + preview.logo)
+            changed = True
+
+        preview.title = data['title']
+        db.session.add(preview)
+        db.session.commit()
+        flash('影片预告信息修改成功!', 'ok')
+
+        if changed:
+            os.remove(app.config['UP_DIR'] + old_logo)
+
+        return redirect(url_for('admin.preview_edit', id=id))
+    return render_template('admin/preview_edit.html', form=form, preview=preview)
 
 
 # 用户列表

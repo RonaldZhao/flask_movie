@@ -3,7 +3,7 @@ from flask_wtf import FlaskForm
 from wtforms import StringField, PasswordField, SubmitField, FileField, TextAreaField, SelectField
 from wtforms.validators import DataRequired, ValidationError
 
-from app.models import Admin, Tag
+from app.models import Admin, Tag, Preview
 
 tags = Tag.query.all()
 
@@ -166,6 +166,33 @@ class MovieForm(FlaskForm):
             'id':'input_release_time',
             'placeholder':'请选择影片上映时间'
         }
+    )
+    submit = SubmitField(
+        label='添加',
+        render_kw={
+            'class':'btn btn-primary',
+        }
+    )
+
+
+class PreviewForm(FlaskForm):
+    title = StringField(
+        label='影片名称',
+        validators=[
+            DataRequired('请输入影片名称!')
+        ],
+        description='影片名称',
+        render_kw={
+            'class':'form-control',
+            'placeholder':'请输入影片名称'
+        }
+    )
+    logo = FileField(
+        label='文件',
+        validators=[
+            DataRequired('请选择影片封面图文件!')
+        ],
+        description='影片封面图文件'
     )
     submit = SubmitField(
         label='添加',
