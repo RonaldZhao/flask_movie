@@ -1,4 +1,5 @@
 # 初始化文件
+import os
 from uuid import uuid4
 
 from flask import Flask, render_template
@@ -9,6 +10,7 @@ app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:123456@localhost/movie'  # 用于连接数据库
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True  # 使Flask-SQLAlchemy追踪对象的修改并且发送信号
 app.config['SECRET_KEY'] = uuid4().hex
+app.config['UP_DIR'] = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'static/uploads/')
 app.debug = True
 
 db = SQLAlchemy(app)

@@ -1,11 +1,16 @@
 # 视图处理文件
+import os
+import uuid
+import datetime
+
 from flask import render_template, redirect, url_for, flash, session, request
 from functools import wraps
+from werkzeug.utils import secure_filename
 
 from . import admin
-from app import db
-from app.admin.forms import LoginForm, TagForm
-from app.models import Admin, Tag
+from app import db, app
+from app.admin.forms import LoginForm, TagForm, MovieForm
+from app.models import Admin, Tag, Movie
 
 
 # 访问控制装饰器
@@ -16,6 +21,12 @@ def admin_login_required(func):
             return redirect(url_for('admin.login', next=request.url))
         return func(*args, **kwargs)
     return deco
+
+
+def change_filename(filename):
+    filename_ext = os.path.splitext(filename)
+    filename = datetime.datetime.now().strftime('%Y%m%d%H%M%S') + str(uuid.uuid4().hex) + filename_ext[-1]
+    return filename
 
 
 @admin.route('/')
@@ -121,10 +132,39 @@ def tag_delete(id=None):
 
 
 # 添加电影
-@admin.route('/movie/add/')
+@admin.route('/movie/add/', methods=['GET', 'POST'])
 @admin_login_required
 def movie_add():
-    return render_template('admin/movie_add.html')
+    form = MovieForm()
+    if form.validate_on_submit():
+        data = form.data
+        file_url = secure_filename(form.url.data.filename)
+        file_logo = secure_filename(form.logo.data.filename)
+        if not os.path.exists(app.config['UP_DIR']):
+            os.makedirs(app.config['UP_DIR'])
+            os.chmod(app.config['UP_DIR'], 'rw')
+        url = change_filename(file_url)
+        logo = change_filename(file_logo)
+        form.url.data.save(app.config['UP_DIR'] + url)
+        form.logo.data.save(app.config['UP_DIR'] + logo)
+        movie = Movie(
+            title=data['title'],
+            url=url,
+            info=data['info'],
+            logo=logo,
+            star=int(data['star']),
+            playnum=0,
+            commentnum=0,
+            tag_id=int(data['tag_id']),
+            area=data['area'],
+            release_time=data['release_time'],
+            length=data['length']
+        )
+        db.session.add(movie)
+        db.session.commit()
+        flash('电影"{0}"添加成功!'.format(data['title']), 'ok')
+        return redirect(url_for('admin.movie_add'))
+    return render_template('admin/movie_add.html', form=form)
 
 
 # 电影列表
