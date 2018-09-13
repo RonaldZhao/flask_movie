@@ -5,7 +5,7 @@
     <h1>微电影管理系统</h1>
     <ol class="breadcrumb">
         <li><a href="#"><i class="fa fa-dashboard"></i>电影管理</a></li>
-        <li class="active">添加电影</li>
+        <li class="active">修改电影信息</li>
     </ol>
 </section>
 <section class="content" id="showcontent">
@@ -13,7 +13,7 @@
         <div class="col-md-12">
             <div class="box box-primary">
                 <div class="box-header with-border">
-                    <h3 class="box-title">添加电影(TODO: 上传时的Loading动画)</h3>
+                    <h3 class="box-title">修改电影信息(TODO: 上传时的Loading动画)</h3>
                 </div>
                 <form role="form" method="post" enctype="multipart/form-data">
                     <div class="box-body">
@@ -32,9 +32,8 @@
                         </div>
                         {% endfor %}
                         <div class="form-group">
-                            <label for="input_title">{{ form.title.label }}</label>
-                            <!-- <input type="text" class="form-control" id="input_title" placeholder="请输入片名！"> -->
-                            {{ form.title }}
+                            {{ form.title.label }}
+                            {{ form.title(value=movie.title) }}
                             {% for err in form.title.errors %}
                             <div class="col-md-12">
                                 <font style="color: red;">{{ err }}</font>
@@ -42,8 +41,7 @@
                             {% endfor %}
                         </div>
                         <div class="form-group">
-                            <label for="input_url">{{ form.url.label }}</label>
-                            <!-- <input type="file" id="input_url"> -->
+                            {{ form.url.label }}
                             {{ form.url }}
                             {% for err in form.url.errors %}
                             <div class="col-md-12">
@@ -55,7 +53,7 @@
                             </div>
                         </div>
                         <div class="form-group">
-                            <label for="input_info">{{ form.info.label }}</label>
+                            {{ form.info.label }}
                             <!-- <textarea class="form-control" rows="10" id="input_info"></textarea> -->
                             {{ form.info }}
                             {% for err in form.info.errors %}
@@ -65,7 +63,7 @@
                             {% endfor %}
                         </div>
                         <div class="form-group">
-                            <label for="input_logo">{{ form.logo.label }}</label>
+                            {{ form.logo.label }}
                             <!-- <input type="file" id="input_logo"> -->
                             {{ form.logo }}
                             {% for err in form.logo.errors %}
@@ -73,10 +71,10 @@
                                 <font style="color: red;">{{ err }}</font>
                             </div>
                             {% endfor %}
-                            <img data-src="holder.js/640x360?random=yes" style="margin-top:5px;" class="img-responsive" alt="">
+                            <img src="{{ url_for('static', filename='uploads/'+movie.logo) }}" style="margin-top:5px;width:640px;height:360px;" class="img-responsive" alt="">
                         </div>
                         <div class="form-group">
-                            <label for="input_star">{{ form.star.label }}</label>
+                            {{ form.star.label }}
                             <!-- <select class="form-control" id="input_star">
                                 <option value="1">1星</option>
                                 <option value="2">2星</option>
@@ -92,7 +90,7 @@
                             {% endfor %}
                         </div>
                         <div class="form-group">
-                            <label for="input_tag_id">{{ form.tag_id.label }}</label>
+                            {{ form.tag_id.label }}
                             <!-- <select class="form-control" id="input_tag_id">
                                 <option value="1">科幻</option>
                                 <option value="2">冒险</option>
@@ -108,9 +106,9 @@
                             {% endfor %}
                         </div>
                         <div class="form-group">
-                            <label for="input_area">{{ form.area.label }}</label>
+                            {{ form.area.label }}
                             <!-- <input type="text" class="form-control" id="input_area" placeholder="请输入地区！"> -->
-                            {{ form.area }}
+                            {{ form.area(value=movie.area) }}
                             {% for err in form.area.errors %}
                             <div class="col-md-12">
                                 <font style="color: red;">{{ err }}</font>
@@ -118,9 +116,9 @@
                             {% endfor %}
                         </div>
                         <div class="form-group">
-                            <label for="input_length">{{ form.length.label }}</label>
+                            {{ form.length.label }}
                             <!-- <input type="text" class="form-control" id="input_length" placeholder="请输入片长！"> -->
-                            {{ form.length }}
+                            {{ form.length(value=movie.length) }}
                             {% for err in form.length.errors %}
                             <div class="col-md-12">
                                 <font style="color: red;">{{ err }}</font>
@@ -128,9 +126,9 @@
                             {% endfor %}
                         </div>
                         <div class="form-group">
-                            <label for="input_release_time">{{ form.release_time.label }}</label>
+                            {{ form.release_time.label }}
                             <!-- <input type="text" class="form-control" id="input_release_time" placeholder="请选择上映时间！"> -->
-                            {{ form.release_time }}
+                            {{ form.release_time(value=movie.release_time) }}
                             {% for err in form.release_time.errors %}
                             <div class="col-md-12">
                                 <font style="color: red;">{{ err }}</font>
@@ -140,7 +138,7 @@
                     </div>
                     <div class="box-footer">
                         <!-- <button type="submit" class="btn btn-primary">添加</button> -->
-                        {{ form.submit }}
+                        {{ form.submit(value="保存") }}
                     </div>
                     {{ form.csrf_token }}
                 </form>
@@ -158,8 +156,8 @@
     jwplayer("moviecontainer").setup({
         flashplayer: "{{ url_for('static', filename='jwplayer/jwplayer.flash.swf') }}",
         playlist: [{
-            file: "{{ url_for('static', filename='') }}",// TODO: 默认为空.当选择文件后使这里的视频显示为此视频
-            title: "DARKSIDE"
+            title: "{{ movie.title }}",
+            file: "{{ url_for('static', filename='uploads/'+movie.url) }}"
         }],
         modes: [{
             type: "html5"

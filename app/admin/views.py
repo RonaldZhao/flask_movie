@@ -90,10 +90,11 @@ def tag_add():
 @admin_login_required
 def tag_edit(id=None):
     # TODO: 修改添加时间为修改时间
-    tag = Tag.query.get_or_404(id)
+    tag = Tag.query.get_or_404(int(id))
     form = TagForm()
     if form.validate_on_submit():
         data = form.data
+        # TODO: 在前端判断数据是否发生了修改, 发生修改了再提交到服务器处理, 减轻服务器压力
         if data['name'] == tag.name:
             flash('标签"{0}"未发生修改!'.format(data['name']), 'err')
             return redirect(url_for('admin.tag_edit', id=id))
@@ -140,13 +141,16 @@ def movie_add():
         data = form.data
         file_url = secure_filename(form.url.data.filename)
         file_logo = secure_filename(form.logo.data.filename)
+
         if not os.path.exists(app.config['UP_DIR']):
             os.makedirs(app.config['UP_DIR'])
             os.chmod(app.config['UP_DIR'], 'rw')
+
         url = change_filename(file_url)
         logo = change_filename(file_logo)
         form.url.data.save(app.config['UP_DIR'] + url)
         form.logo.data.save(app.config['UP_DIR'] + logo)
+
         movie = Movie(
             title=data['title'],
             url=url,
@@ -171,11 +175,13 @@ def movie_add():
 @admin.route('/movie/delete/<int:id>/', methods=['GET'])
 @admin_login_required
 def movie_delete(id=None):
+    # TODO: 删除与其相关的其他数据(如评论, 收藏) and 删除电影视频和封面文件
     if id:
         movie = Movie.query.filter_by(id=id).first_or_404()
         db.session.delete(movie)
         db.session.commit()
         flash('电影"{0}"删除成功!'.format(movie.title), 'ok')
+
     return redirect(url_for('admin.movie_list', page=1))
 
 
@@ -185,12 +191,92 @@ def movie_delete(id=None):
 def movie_list(page=None):
     if page is None:
         page = 1
+
     # TODO: 下面的按时间排序的方式在当时间相同的时候可能会有显示遗漏问题
     page_data = Movie.query.join(Tag).filter(
         Tag.id==Movie.tag_id
     ).order_by(
-        Movie.add_time.desc()).paginate(page=page, per_page=10)
+        Movie.add_time.desc()
+    ).paginate(page=page, per_page=10)
     return render_template('admin/movie_list.html', page_data=page_data)
+
+
+# 修改电影
+@admin.route('/movie/edit/<int:id>/', methods=['GET', 'POST'])
+@admin_login_required
+def movie_edit(id=None):
+    # TODO: 修改添加时间为修改时间
+    movie = Movie.query.get_or_404(int(id))
+    form = MovieForm()
+    form.url.validators.clear()
+    form.logo.validators.clear()
+    if request.method == 'GET':
+        form.info.data = movie.info
+        form.tag_id.data = movie.tag_id
+        form.star.data = movie.star
+    if form.validate_on_submit():
+        data = form.data
+        changed = False
+        # TODO: 在前端判断数据是否发生了修改, 发生修改了再提交到服务器处理, 减轻服务器压力
+        movie_count = Movie.query.filter_by(title=data['title']).count()
+
+        if data['title'] != movie.title:
+            if movie_count >= 1:
+                flash('此电影名称已经存在!', 'err')
+                return redirect(url_for('admin.movie_edit', id=id))
+            movie.title = data['title']
+            changed = True
+
+        if data['star'] != movie.star:
+            movie.star = data['star']
+            changed = True
+
+        if data['tag_id'] != movie.tag_id:
+            movie.tag_id = data['tag_id']
+            changed = True
+
+        if data['info'] != movie.info:
+            movie.info = data['info']
+            changed = True
+
+        if data['area'] != movie.area:
+            movie.area = data['area']
+            changed = True
+
+        if data['length'] != movie.length:
+            movie.length = data['length']
+            changed = True
+
+        if data['release_time'] != str(movie.release_time):
+            movie.release_time = data['release_time']
+            changed = True
+
+        if not os.path.exists(app.config['UP_DIR']):
+            os.makedirs(app.config['UP_DIR'])
+            os.chmod(app.config['UP_DIR'], 'rw')
+
+        if type(form.url.data) != str and form.url.data.filename != "":
+            # TODO: 修改完视频后把原来的删掉
+            file_url = secure_filename(form.url.data.filename)
+            movie.url = change_filename(file_url)
+            form.url.data.save(app.config['UP_DIR'] + movie.url)
+            changed = True
+
+        if type(form.logo.data) != str and form.logo.data.filename != "":
+            # TODO: 修改完封面图后把原来的删掉
+            file_logo = secure_filename(form.logo.data.filename)
+            movie.logo = change_filename(file_logo)
+            form.logo.data.save(app.config['UP_DIR'] + movie.logo)
+            changed = True
+
+        if changed:
+            db.session.add(movie)
+            db.session.commit()
+            flash('电影信息修改成功!', 'ok')
+        else:
+            flash('亲, 没改信息就不要点保存了嘛!', 'err')
+        return redirect(url_for('admin.movie_edit', id=id))
+    return render_template('admin/movie_edit.html', form=form, movie=movie)
 
 
 # 添加上映预告
