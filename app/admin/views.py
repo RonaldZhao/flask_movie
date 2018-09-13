@@ -215,6 +215,8 @@ def movie_edit(id=None):
         form.tag_id.data = movie.tag_id
         form.star.data = movie.star
     if form.validate_on_submit():
+        old_url = movie.url
+        old_logo = movie.logo
         data = form.data
         changed = False
         # TODO: 在前端判断数据是否发生了修改, 发生修改了再提交到服务器处理, 减轻服务器压力
@@ -256,14 +258,12 @@ def movie_edit(id=None):
             os.chmod(app.config['UP_DIR'], 'rw')
 
         if type(form.url.data) != str and form.url.data.filename != "":
-            # TODO: 修改完视频后把原来的删掉
             file_url = secure_filename(form.url.data.filename)
             movie.url = change_filename(file_url)
             form.url.data.save(app.config['UP_DIR'] + movie.url)
             changed = True
 
         if type(form.logo.data) != str and form.logo.data.filename != "":
-            # TODO: 修改完封面图后把原来的删掉
             file_logo = secure_filename(form.logo.data.filename)
             movie.logo = change_filename(file_logo)
             form.logo.data.save(app.config['UP_DIR'] + movie.logo)
@@ -272,6 +272,11 @@ def movie_edit(id=None):
         if changed:
             db.session.add(movie)
             db.session.commit()
+            # 下面这两个删除就资源可能发生其他请求正在读取的时候无法删除的情况
+            if movie.url != old_url:
+                os.remove(app.config['UP_DIR'] + old_url)
+            if movie.logo != old_logo:
+                os.remove(app.config['UP_DIR'] + old_logo)
             flash('电影信息修改成功!', 'ok')
         else:
             flash('亲, 没改信息就不要点保存了嘛!', 'err')
