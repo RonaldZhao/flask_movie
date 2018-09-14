@@ -1,4 +1,5 @@
 {% extends 'admin/admin.html' %}
+{% import 'ui/admin_page.html' as pg %}
 
 {% block content %}
 <section class="content-header">
@@ -16,59 +17,38 @@
                     <h3 class="box-title">评论列表</h3>
                     <div class="box-tools">
                         <div class="input-group input-group-sm" style="width: 150px;">
-                            <input type="text" name="table_search" class="form-control pull-right"
-                                   placeholder="请输入关键字...">
+                            <input type="text" name="table_search" class="form-control pull-right" placeholder="请输入关键字...">
                             <div class="input-group-btn">
-                                <button type="submit" class="btn btn-default"><i class="fa fa-search"></i>
-                                </button>
+                                <button type="submit" class="btn btn-default"><i class="fa fa-search"></i></button>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="box-body box-comments">
+                    {% for msg in get_flashed_messages(category_filter=['ok']) %}
+                    <div class="alert alert-success alert-dismissible">
+                        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                        <h4><i class="icon fa fa-check"></i>非常棒!</h4>
+                        {{ msg }}
+                    </div>
+                    {% endfor %}
+                    {% for comment in page_data.items %}
                     <div class="box-comment">
-                        <img class="img-circle img-sm"
-                             src="{{ url_for('static', filename='admin/dist/img/user3-128x128.jpg') }}" alt="User Image">
+                        <img class="img-circle img-sm" src="{{ url_for('static', filename='admin/dist/img/user3-128x128.jpg') }}" alt="User Image">
                         <div class="comment-text">
-                            <span class="username">
-                                小美
+                            <span class="username">{{ comment.user.name }}
                                 <span class="text-muted pull-right">
-                                    <i class="fa fa-calendar" aria-hidden="true"></i>
-                                    &nbsp;
-                                    2017-01-01 12:00:00
+                                    <i class="fa fa-calendar" aria-hidden="true"></i>{{ comment.add_time }}
                                 </span>
                             </span>
-                            关于电影<a>《环太平洋》</a>的评论：xxx
-                            <br><a class="label label-danger pull-right">删除</a>
+                            关于电影<a>《{{ comment.movie.title }}》</a>的评论：{{ comment.content }}
+                            <br><a href="{{ url_for('admin.comment_delete', id=comment.id) }}" class="label label-danger pull-right">删除</a>
                         </div>
                     </div>
-                    <div class="box-comment">
-                        <img class="img-circle img-sm"
-                             src="{{ url_for('static', filename='admin/dist/img/user5-128x128.jpg') }}" alt="User Image">
-                        <div class="comment-text">
-                            <span class="username">
-                                小丽
-                                <span class="text-muted pull-right">
-                                    <i class="fa fa-calendar" aria-hidden="true"></i>
-                                    &nbsp;
-                                    2017-01-01 12:00:00
-                                </span>
-                            </span>
-                            关于电影<a>《环太平洋》</a>的评论：xxx
-                            <br><a class="label label-danger pull-right">删除</a>
-                        </div>
-                    </div>
+                    {% endfor %}
                 </div>
                 <div class="box-footer clearfix">
-                    <ul class="pagination pagination-sm no-margin pull-right">
-                        <li><a href="#">首页</a></li>
-                        <li><a href="#">上一页</a></li>
-                        <li><a href="#">1</a></li>
-                        <li><a href="#">2</a></li>
-                        <li><a href="#">3</a></li>
-                        <li><a href="#">下一页</a></li>
-                        <li><a href="#">尾页</a></li>
-                    </ul>
+                    {{ pg.page(page_data, 'admin.comment_list') }}
                 </div>
             </div>
         </div>

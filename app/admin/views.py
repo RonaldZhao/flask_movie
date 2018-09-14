@@ -10,7 +10,7 @@ from werkzeug.utils import secure_filename
 from . import admin
 from app import db, app
 from app.admin.forms import LoginForm, TagForm, MovieForm, PreviewForm
-from app.models import Admin, Tag, Movie, Preview, User
+from app.models import Admin, Tag, Movie, Preview, User, Comment
 
 
 # 访问控制装饰器
@@ -418,11 +418,34 @@ def user_view(id=None):
 
 
 # 评论列表
-@admin.route('/comment/list/')
+@admin.route('/comment/list/<int:page>/', methods=['GET'])
 @admin_login_required
-def comment_list():
-    return render_template('admin/comment_list.html')
+def comment_list(page=None):
+    if page is None:
+        page = 1
+    page_data = Comment.query.join(
+        Movie
+    ).join(
+        User
+    ).filter(
+        Movie.id == Comment.movie_id,
+        User.id == Comment.user_id
+    ).order_by(
+        Comment.add_time.desc()
+    ).paginate(page=page, per_page=10)
+    return render_template('admin/comment_list.html', page_data=page_data)
 
+
+# 删除评论
+@admin.route('/comment/delete/<int:id>/', methods=['GET'])
+@admin_login_required
+def comment_delete(id=None):
+    if id:
+        comment = Comment.query.get_or_404(int(id))
+        db.session.delete(comment)
+        db.session.commit()
+        flash('删除评论成功!', 'ok')
+    return redirect(url_for('admin.comment_list', page=1))
 
 # 收藏列表
 @admin.route('/moviecol/list/')
