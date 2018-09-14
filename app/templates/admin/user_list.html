@@ -56,7 +56,7 @@
                             <td>正常/冻结</td>
                             <td>{{ user.register_time }}</td>
                             <td>
-                                <a class="label label-success" href="{{ url_for('admin.user_view') }}" style="margin-right:5px;">查看</a>
+                                <a class="label label-success" href="{{ url_for('admin.user_view', id=user.id) }}" style="margin-right:5px;">查看</a>
                                 <a class="label label-info" style="margin-right:5px;">解冻</a>
                                 <a class="label label-warning" style="margin-right:5px;">冻结</a>
                                 <a href="{{ url_for('admin.user_delete', id=user.id) }}" class="label label-danger" style="margin-left:5px;">删除</a>

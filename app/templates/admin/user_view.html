@@ -16,7 +16,7 @@
 <section class="content-header">
     <h1>微电影管理系统</h1>
     <ol class="breadcrumb">
-        <li><a href="{{ url_for('admin.user_list') }}"><i class="fa fa-dashboard"></i>用户管理</a></li>
+        <li><a href="{{ url_for('admin.user_list', page=1) }}"><i class="fa fa-dashboard"></i>用户管理</a></li>
         <li class="active">查看用户</li>
     </ol>
 </section>
@@ -32,42 +32,46 @@
                         <tbody>
                         <tr>
                             <td class="td_bd">编号：</td>
-                            <td>1</td>
+                            <td>{{ user.id }}</td>
                         </tr>
                         <tr>
                             <td class="td_bd">昵称：</td>
-                            <td>拓荒者</td>
+                            <td>{{ user.name }}</td>
                         </tr>
                         <tr>
                             <td class="td_bd">邮箱：</td>
-                            <td>1780316635@qq.com</td>
+                            <td>{{ user.email }}</td>
                         </tr>
                         <tr>
                             <td class="td_bd">手机：</td>
-                            <td>13700632835</td>
+                            <td>{{ user.phone }}</td>
                         </tr>
                         <tr>
                             <td class="td_bd">头像：</td>
                             <td>
+                                {% if user.face == '' %}
                                 <img data-src="holder.js/100x100?random=yes" class="img-responsive" alt="">
+                                {% else %}
+                                <img src="{{ url_for('static', filename='uploads/users/'+user.face) }}" style="width:100px;height:100px;" class="img-responsive" alt="">
+                                {% endif %}
                             </td>
                         </tr>
                         <tr>
                             <td class="td_bd">注册时间：</td>
-                            <td>
-                                2017-01-01 12:00:00
-                            </td>
+                            <td>{{ user.register_time }}</td>
                         </tr>
                         <tr>
                             <td class="td_bd">唯一标志符：</td>
-                            <td>
-                                xxxxxx
-                            </td>
+                            <td>{{ user.uuid }}</td>
                         </tr>
                         <tr>
                             <td class="td_bd">个性简介：</td>
                             <td>
-                                xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+                                {% if user.info == '' %}
+                                这个人比较神秘, 什么都没透露.
+                                {% else %}
+                                {{ user.info }}
+                                {% endif %}
                             </td>
                         </tr>
                         </tbody>
@@ -80,5 +84,10 @@
 {% endblock %}
 
 {% block js %}
-
+<script>
+    $(document).ready(function(){
+        $("#g-5").addClass("active");
+        $("#g-5-1").addClass("active");
+    });
+</script>
 {% endblock %}

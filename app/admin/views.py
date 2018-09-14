@@ -409,10 +409,12 @@ def user_delete(id=None):
 
 
 # 查看用户
-@admin.route('/user/view/')
+@admin.route('/user/view/<int:id>/', methods=['GET'])
 @admin_login_required
-def user_view():
-    return render_template('admin/user_view.html')
+def user_view(id=None):
+    if id:
+        user = User.query.get_or_404(int(id))
+    return render_template('admin/user_view.html', user=user)
 
 
 # 评论列表
