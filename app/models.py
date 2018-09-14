@@ -3,6 +3,16 @@ from datetime import datetime
 
 from app import db
 
+"""
+from flask import Flask
+from flask_sqlalchemy import SQLAlchemy
+import pymysql
+
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:123456@localhost/movie'  # 用于连接数据库
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True  # 使Flask-SQLAlchemy追踪对象的修改并且发送信号
+db = SQLAlchemy(app)
+"""
 
 # 会员数据模型
 class User(db.Model):
@@ -13,7 +23,7 @@ class User(db.Model):
     email = db.Column(db.String(100), unique=True)  # 邮箱
     phone = db.Column(db.String(11), unique=True)  # 手机号
     info = db.Column(db.Text)  # 简介
-    face = db.Column(db.String(255), unique=True)  # 头像(存储地址)
+    face = db.Column(db.String(255))  # 头像(存储地址)
     register_time = db.Column(db.DateTime, index=True, default=datetime.now)  # 注册时间
     uuid = db.Column(db.String(255), unique=True)  # 唯一标识符
     comments = db.relationship('Comment', backref='user')  # 评论外键关联
@@ -23,7 +33,7 @@ class User(db.Model):
     def check_pwd(self, pwd):
         from werkzeug.security import check_password_hash
         return check_password_hash(self.pwd, pwd)
-    
+
     def __repr__(self):
         return '<User %r>' % self.name
 
@@ -190,7 +200,7 @@ if __name__ == '__main__':
     db.session.commit()
 
     from werkzeug.security import generate_password_hash
-    admin = Admin(name='ronaldzhao', pwd=generate_password_hash('ronaldzhao'), is_super=0, role_id=1)
+    admin = Admin(name='ronaldzhao', pwd=generate_password_hash('123456'), is_super=0, role_id=1)
     db.session.add(admin)
     db.session.commit()
 """
