@@ -9,7 +9,7 @@ from werkzeug.utils import secure_filename
 
 from . import admin
 from app import db, app
-from app.admin.forms import LoginForm, TagForm, MovieForm, PreviewForm
+from app.admin.forms import LoginForm, TagForm, MovieForm, PreviewForm, PwdForm
 from app.models import Admin, Tag, Movie, Preview, User, Comment, Moviecol
 
 
@@ -44,7 +44,7 @@ def login():
         data = form.data
         admin = Admin.query.filter_by(name=data['account']).first()
         if not admin.check_pwd(data['pwd']):
-            flash('密码错误!')
+            flash('密码错误!', 'err')
             return redirect(url_for('admin.login'))
         session['admin'] = data['account']
         return redirect(request.args.get('next') or url_for('admin.index'))
@@ -60,10 +60,20 @@ def logout():
 
 
 # 修改密码
-@admin.route('/pwd/')
+@admin.route('/pwd/', methods=['GET', 'POST'])
 @admin_login_required
 def pwd():
-    return render_template('admin/pwd.html')
+    form = PwdForm()
+    if form.validate_on_submit():
+        data = form.data
+        admin = Admin.query.filter_by(name=session['admin']).first()
+        from werkzeug.security import generate_password_hash
+        admin.pwd = generate_password_hash(data['new_pwd'])
+        db.session.add(admin)
+        db.session.commit()
+        flash('密码修改成功! 请重新登录.', 'ok')
+        return redirect(url_for('admin.logout'))
+    return render_template('admin/pwd.html', form=form)
 
 
 # 添加标签

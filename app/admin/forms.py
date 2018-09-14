@@ -200,3 +200,42 @@ class PreviewForm(FlaskForm):
             'class':'btn btn-primary',
         }
     )
+
+
+class PwdForm(FlaskForm):
+    old_pwd = PasswordField(
+        label='当前密码',
+        validators=[
+            DataRequired('请输入当前密码!')
+        ],
+        description='当前密码',
+        render_kw={
+            'class':'form-control',
+            'placeholder':'请输入当前密码'
+        }
+    )
+    new_pwd = PasswordField(
+        label='新密码',
+        validators=[
+            DataRequired('请输入新密码!')
+        ],
+        description='新密码',
+        render_kw={
+            'class':'form-control',
+            'placeholder':'请输入新密码'
+        }
+    )
+    submit = SubmitField(
+        label='保存修改',
+        render_kw={
+            'class':'btn btn-primary'
+        }
+    )
+
+    def validate_old_pwd(self, field):
+        from flask import session
+        old_pwd = field.data
+        name = session['admin']
+        admin = Admin.query.filter_by(name=name).first()
+        if not admin.check_pwd(old_pwd):
+            raise ValidationError('当前密码输入不正确!')
