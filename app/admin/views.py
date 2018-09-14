@@ -382,10 +382,30 @@ def preview_edit(id=None):
 
 
 # 用户列表
-@admin.route('/user/list/')
+@admin.route('/user/list/<int:page>/')
 @admin_login_required
-def user_list():
-    return render_template('admin/user_list.html')
+def user_list(page=None):
+    if page is None:
+        page = 1
+    page_data = User.query.order_by(User.register_time.desc()).paginate(page=page, per_page=10)
+    return render_template('admin/user_list.html', page_data=page_data)
+
+
+# 删除用户
+@admin.route('/user/delete/<int:id>/', methods=['GET'])
+@admin_login_required
+def user_delete(id=None):
+    if id:
+        user = User.query.get_or_404(int(id))
+        old_face = user.face
+        db.session.delete(user)
+        db.session.commit()
+        # 同时删除其封面图
+        if old_face != '' and os.path.exists(app.config['UP_DIR'] + 'user_faces'):
+            os.remove(app.config['UP_DIR'] + 'user_faces/' + old_face)
+        flash('用户"{0}"删除成功!'.format(user.email), 'ok')
+
+    return redirect(url_for('admin.user_list', page=1))
 
 
 # 查看用户

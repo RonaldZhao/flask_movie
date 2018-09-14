@@ -20,6 +20,10 @@ class User(db.Model):
     userlogs = db.relationship('UserLog', backref='user')  # 会员登录日志外键关联
     moviecols = db.relationship('Moviecol', backref='user')  # 电影收藏外键关联
 
+    def check_pwd(self, pwd):
+        from werkzeug.security import check_password_hash
+        return check_password_hash(self.pwd, pwd)
+    
     def __repr__(self):
         return '<User %r>' % self.name
 

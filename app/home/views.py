@@ -1,12 +1,17 @@
 # 视图处理文件
-from flask import render_template, redirect, url_for
+import uuid
+
+from flask import render_template, redirect, url_for, flash
+from werkzeug.security import generate_password_hash
 
 from . import home
+from app.home.forms import RegisterForm
+from app.models import User
+from app import db
 
 
 @home.route('/')
 def index():
-    # return '<h1 style="color: green;">this is home.</h1>'
     return render_template('home/index.html')
 
 
@@ -20,9 +25,25 @@ def logout():
     return redirect(url_for('home.login'))
 
 
-@home.route('/register/')
+@home.route('/register/', methods=['GET', 'POST'])
 def register():
-    return render_template('home/register.html')
+    form = RegisterForm()
+    if form.validate_on_submit():
+        data = form.data
+        user = User(
+            name=data['name'],
+            pwd=generate_password_hash(data['pwd']),
+            email=data['email'],
+            phone=data['phone'],
+            info='',
+            face='',
+            uuid=uuid.uuid4().hex,
+        )
+        db.session.add(user)
+        db.session.commit()
+        flash('注册成功!', 'ok')
+        return redirect(url_for('home.login'))
+    return render_template('home/register.html', form=form)
 
 
 @home.route('/user/')
