@@ -10,7 +10,7 @@ from werkzeug.utils import secure_filename
 from . import admin
 from app import db, app
 from app.admin.forms import LoginForm, TagForm, MovieForm, PreviewForm
-from app.models import Admin, Tag, Movie, Preview, User, Comment
+from app.models import Admin, Tag, Movie, Preview, User, Comment, Moviecol
 
 
 # 访问控制装饰器
@@ -448,10 +448,32 @@ def comment_delete(id=None):
     return redirect(url_for('admin.comment_list', page=1))
 
 # 收藏列表
-@admin.route('/moviecol/list/')
+@admin.route('/moviecol/list/<int:page>/', methods=['GET'])
 @admin_login_required
-def moviecol_list():
-    return render_template('admin/moviecol_list.html')
+def moviecol_list(page=None):
+    if page is None:
+        page = 1
+    page_data = Moviecol.query.join(
+        Movie
+    ).join(
+        User
+    ).filter(
+        Movie.id == Moviecol.movie_id,
+        User.id == Moviecol.user_id
+    ).order_by(
+        Moviecol.add_time.desc()
+    ).paginate(page=page, per_page=10)
+    return render_template('admin/moviecol_list.html', page_data=page_data)
+
+@admin.route('/moviecol/delete/<int:id>/', methods=['GET'])
+@admin_login_required
+def moviecol_delete(id=None):
+    if id:
+        moviecol = Moviecol.query.get_or_404(int(id))
+        db.session.delete(moviecol)
+        db.session.commit()
+        flash('删除收藏成功!', 'ok')
+    return redirect(url_for('admin.moviecol_list'))
 
 
 # 操作日志列表
