@@ -20,7 +20,7 @@ class LoginForm(FlaskForm):
         description='账号',
         render_kw={
             'class':'form-control',
-            'placeholder':'请输入账号！',
+            'placeholder':'请输入账号',
             'required':'required'
         }
     )
@@ -32,7 +32,7 @@ class LoginForm(FlaskForm):
         description='密码',
         render_kw={
             'class':'form-control',
-            'placeholder':'请输入密码！',
+            'placeholder':'请输入密码',
             'required':'required'
         }
     )
@@ -60,7 +60,7 @@ class TagForm(FlaskForm):
         render_kw={
             'class':'form-control',
             'id':'input_name',
-            'placeholder':'请输入标签名称！'
+            'placeholder':'请输入标签名称'
         }
     )
     submit = SubmitField(

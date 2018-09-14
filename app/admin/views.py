@@ -13,6 +13,17 @@ from app.admin.forms import LoginForm, TagForm, MovieForm, PreviewForm, PwdForm
 from app.models import Admin, Tag, Movie, Preview, User, Comment, Moviecol
 
 
+@admin.context_processor
+def login_time():
+    """
+    用来显示每个页面的访问时间
+    """
+    data = dict(
+        login_time=datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    )
+    return data
+
+
 # 访问控制装饰器
 def admin_login_required(func):
     @wraps(func)
