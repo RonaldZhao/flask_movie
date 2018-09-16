@@ -10,77 +10,77 @@ from app.models import User
 from app import db
 
 
-@home.route('/')
+@home.route("/")
 def index():
-    return render_template('home/index.html')
+    return render_template("home/index.html")
 
 
-@home.route('/login/')
+@home.route("/login/")
 def login():
-    return render_template('home/login.html')
+    return render_template("home/login.html")
 
 
-@home.route('/logout/')
+@home.route("/logout/")
 def logout():
-    return redirect(url_for('home.login'))
+    return redirect(url_for("home.login"))
 
 
-@home.route('/register/', methods=['GET', 'POST'])
+@home.route("/register/", methods=["GET", "POST"])
 def register():
     form = RegisterForm()
     if form.validate_on_submit():
         data = form.data
         user = User(
-            name=data['name'],
-            pwd=generate_password_hash(data['pwd']),
-            email=data['email'],
-            phone=data['phone'],
-            info='',
-            face='',
+            name=data["name"],
+            pwd=generate_password_hash(data["pwd"]),
+            email=data["email"],
+            phone=data["phone"],
+            info="",
+            face="",
             uuid=uuid.uuid4().hex,
         )
         db.session.add(user)
         db.session.commit()
-        flash('注册成功!', 'ok')
-        return redirect(url_for('home.login'))
-    return render_template('home/register.html', form=form)
+        flash("注册成功!", "ok")
+        return redirect(url_for("home.login"))
+    return render_template("home/register.html", form=form)
 
 
-@home.route('/user/')
+@home.route("/user/")
 def user():
-    return render_template('home/user.html')
+    return render_template("home/user.html")
 
 
-@home.route('/pwd/')
+@home.route("/pwd/")
 def pwd():
-    return render_template('home/pwd.html')
+    return render_template("home/pwd.html")
 
 
-@home.route('/comments/')
+@home.route("/comments/")
 def comments():
-    return render_template('home/comments.html')
+    return render_template("home/comments.html")
 
 
-@home.route('/loginlog/')
+@home.route("/loginlog/")
 def loginlog():
-    return render_template('home/loginlog.html')
+    return render_template("home/loginlog.html")
 
 
-@home.route('/moviecol/')
+@home.route("/moviecol/")
 def moviecol():
-    return render_template('home/moviecol.html')
+    return render_template("home/moviecol.html")
 
 
-@home.route('/animation/')
+@home.route("/animation/")
 def animation():
-    return render_template('home/animation.html')
+    return render_template("home/animation.html")
 
 
-@home.route('/search/')
+@home.route("/search/")
 def search():
-    return render_template('home/search.html')
+    return render_template("home/search.html")
 
 
-@home.route('/play/')
+@home.route("/play/")
 def play():
-    return render_template('home/play.html')
+    return render_template("home/play.html")
