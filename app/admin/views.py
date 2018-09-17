@@ -9,7 +9,14 @@ from werkzeug.utils import secure_filename
 
 from . import admin
 from app import db, app
-from app.admin.forms import LoginForm, TagForm, MovieForm, PreviewForm, PwdForm
+from app.admin.forms import (
+    LoginForm,
+    TagForm,
+    MovieForm,
+    PreviewForm,
+    PwdForm,
+    AuthForm,
+)
 from app.models import (
     Admin,
     Tag,
@@ -21,6 +28,7 @@ from app.models import (
     AdminLog,
     UserLog,
     OpLog,
+    Auth,
 )
 
 
@@ -681,25 +689,88 @@ def role_list():
 
 
 # 添加权限
-@admin.route("/auth/add/")
+@admin.route("/auth/add/", methods=["GET", "POST"])
 @admin_login_required
 def auth_add():
-    """
-    oplog = OpLog(
-        admin_id=session["admin_id"],
-        ip=request.remote_addr,
-        reason='添加权限"{0}"'.format(auth.name),
-    )
-    db.session.add(oplog)
-    """
-    return render_template("admin/auth_add.html")
+    form = AuthForm()
+    if form.validate_on_submit():
+        data = form.data
+        auth = Auth(name=data["name"], url=data["url"])
+        if Auth.query.filter_by(name=data["name"]).count() == 1:
+            flash('权限"{0}"已经存在，请勿重复添加！'.format(data["name"]), "err")
+        else:
+            db.session.add(auth)
+            oplog = OpLog(
+                admin_id=session["admin_id"],
+                ip=request.remote_addr,
+                reason='添加权限"{0}"'.format(auth.name),
+            )
+            db.session.add(oplog)
+            db.session.commit()
+            flash('添加权限"{0}"成功！'.format(data["name"]), "ok")
+        return redirect(url_for("admin.auth_add"))
+    return render_template("admin/auth_add.html", form=form)
+
+
+# 删除权限
+@admin.route("/auth/delete/<int:id>/", methods=["GET"])
+@admin_login_required
+def auth_delete(id=None):
+    if id:
+        auth = Auth.query.filter_by(id=id).first_or_404()
+        db.session.delete(auth)
+        oplog = OpLog(
+            admin_id=session["admin_id"],
+            ip=request.remote_addr,
+            reason='删除权限"{0}"'.format(auth.name),
+        )
+        db.session.add(oplog)
+        db.session.commit()
+        flash('权限"{0}"删除成功!'.format(auth.name), "ok")
+    return redirect(url_for("admin.auth_list", page=1))
 
 
 # 权限列表
-@admin.route("/auth/list/")
+@admin.route("/auth/list/<int:page>/", methods=["GET"])
 @admin_login_required
-def auth_list():
-    return render_template("admin/auth_list.html")
+def auth_list(page=None):
+    if page is None:
+        page = 1
+    page_data = Auth.query.order_by(Auth.add_time.desc()).paginate(
+        page=page, per_page=10
+    )
+    return render_template("admin/auth_list.html", page_data=page_data)
+
+
+# 修改权限信息
+@admin.route("/auth/edit/<int:id>/", methods=["GET", "POST"])
+@admin_login_required
+def auth_edit(id=None):
+    # TODO: 修改添加时间为修改时间
+    auth = Auth.query.get_or_404(int(id))
+    form = AuthForm()
+    if form.validate_on_submit():
+        data = form.data
+        # TODO: 在前端判断数据是否发生了修改, 发生修改了再提交到服务器处理, 减轻服务器压力
+        if data["name"] == auth.name and data["url"] == auth.url:
+            flash("权限信息不作修改就不要点点点了嘛!", "err")
+            return redirect(url_for("admin.auth_edit", id=id))
+        if Auth.query.filter_by(name=data["name"]).count() == 1:
+            flash('权限"{0}"已经存在!'.format(data["name"]), "err")
+            return redirect(url_for("admin.auth_edit", id=id))
+        oplog = OpLog(
+            admin_id=session["admin_id"],
+            ip=request.remote_addr,
+            reason='修改权限"{0}"的信息'.format(auth.name),
+        )
+        auth.name = data["name"]
+        auth.url = data["url"]
+        db.session.add(auth)
+        db.session.add(oplog)
+        db.session.commit()
+        flash("权限信息已修改!", "ok")
+        return redirect(url_for("admin.auth_edit", id=id))
+    return render_template("admin/auth_edit.html", form=form, auth=auth)
 
 
 # 添加管理员
