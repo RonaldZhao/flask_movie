@@ -10,7 +10,16 @@ from werkzeug.utils import secure_filename
 from . import admin
 from app import db, app
 from app.admin.forms import LoginForm, TagForm, MovieForm, PreviewForm, PwdForm
-from app.models import Admin, Tag, Movie, Preview, User, Comment, Moviecol
+from app.models import (
+    Admin,
+    Tag,
+    Movie,
+    Preview,
+    User,
+    Comment,
+    Moviecol,
+    AdminLog,
+)
 
 
 @admin.context_processor
@@ -63,6 +72,9 @@ def login():
             flash("密码错误!", "err")
             return redirect(url_for("admin.login"))
         session["admin"] = data["account"]
+        adminlog = AdminLog(admin_id=admin.id, ip=request.remote_addr)
+        db.session.add(adminlog)
+        db.session.commit()
         return redirect(request.args.get("next") or url_for("admin.index"))
     return render_template("admin/login.html", form=form)
 
@@ -518,10 +530,18 @@ def oplog_list():
 
 
 # 管理员日志列表
-@admin.route("/adminloginlog/list")
+@admin.route("/adminloginlog/list/<int:page>/", methods=["GET"])
 @admin_login_required
-def adminloginlog_list():
-    return render_template("admin/adminloginlog_list.html")
+def adminloginlog_list(page=None):
+    if not page:
+        page = 1
+    page_data = (
+        AdminLog.query.join(Admin)
+        .filter(AdminLog.admin_id == Admin.id)
+        .order_by(AdminLog.login_time.desc())
+        .paginate(page=page, per_page=10)
+    )
+    return render_template("admin/adminloginlog_list.html", page_data=page_data)
 
 
 # 用户日志列表
