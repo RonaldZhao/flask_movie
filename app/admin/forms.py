@@ -7,12 +7,14 @@ from wtforms import (
     FileField,
     TextAreaField,
     SelectField,
+    SelectMultipleField,
 )
 from wtforms.validators import DataRequired, ValidationError
 
-from app.models import Admin, Tag
+from app.models import Admin, Tag, Auth
 
 tags = Tag.query.all()
+auth_list = Auth.query.all()
 
 
 class LoginForm(FlaskForm):
@@ -178,5 +180,23 @@ class AuthForm(FlaskForm):
         validators=[DataRequired("请输入权限地址！")],
         description="权限地址",
         render_kw={"class": "form-control", "placeholder": "权限地址"},
+    )
+    submit = SubmitField(label="添加", render_kw={"class": "btn btn-primary"})
+
+
+class RoleForm(FlaskForm):
+    name = StringField(
+        label="角色名称",
+        validators=[DataRequired("请输入角色名称！")],
+        description="角色名称",
+        render_kw={"class": "form-control"},
+    )
+    auths = SelectMultipleField(
+        label="权限列表(按住Ctrl进行多选)",
+        validators=[DataRequired("请至少选择一项")],
+        coerce=int,
+        choices=[(auth.id, auth.name) for auth in auth_list],
+        description="权限列表",
+        render_kw={"class": "form-control"},
     )
     submit = SubmitField(label="添加", render_kw={"class": "btn btn-primary"})

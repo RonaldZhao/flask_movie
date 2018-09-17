@@ -16,6 +16,7 @@ from app.admin.forms import (
     PreviewForm,
     PwdForm,
     AuthForm,
+    RoleForm,
 )
 from app.models import (
     Admin,
@@ -29,6 +30,7 @@ from app.models import (
     UserLog,
     OpLog,
     Auth,
+    Role,
 )
 
 
@@ -667,25 +669,87 @@ def userloginlog_list(page=None):
 
 
 # 添加角色
-@admin.route("/role/add/")
+@admin.route("/role/add/", methods=["GET", "POST"])
 @admin_login_required
 def role_add():
-    """
-    oplog=OpLog(
-        admin_id=session["admin_id"],
-        ip=request.remote_addr,
-        reason='添加角色"{0}"'.format(role.name)
-    )
-    db.session.add(oplog)
-    """
-    return render_template("admin/role_add.html")
+    form = RoleForm()
+    if form.validate_on_submit():
+        data = form.data
+        if Role.query.filter_by(name=data["name"]).count() == 1:
+            flash('角色"{0}"已存在，请勿重复添加！'.format(data["name"]), "err")
+            return redirect(url_for("admin.role_add"))
+        role = Role(name=data["name"], auths=",".join(map(str, data["auths"])))
+        db.session.add(role)
+        oplog = OpLog(
+            admin_id=session["admin_id"],
+            ip=request.remote_addr,
+            reason='添加角色"{0}"'.format(data["name"]),
+        )
+        db.session.add(oplog)
+        db.session.commit()
+        flash('添加角色"{0}"成功！'.format(data["name"]), "ok")
+        return redirect(url_for("admin.role_add"))
+    return render_template("admin/role_add.html", form=form)
+
+
+# 角色删除
+@admin.route("/role/delete/<int:id>/", methods=["GET"])
+@admin_login_required
+def role_delete(id=None):
+    if id:
+        role = Role.query.get_or_404(int(id))
+        db.session.delete(role)
+        oplog = OpLog(
+            admin_id=session["admin_id"],
+            ip=request.remote_addr,
+            reason='删除角色"{0}"'.format(role.name),
+        )
+        db.session.add(oplog)
+        db.session.commit()
+        flash('删除角色"{0}"成功！'.format(role.name), "ok")
+    return redirect(url_for("admin.role_list", page=1))
 
 
 # 角色列表
-@admin.route("/role/list/")
+@admin.route("/role/list/<int:page>/", methods=["GET"])
 @admin_login_required
-def role_list():
-    return render_template("admin/role_list.html")
+def role_list(page=None):
+    if page is None:
+        page = 1
+    page_data = Role.query.order_by(Role.add_time.desc()).paginate(
+        page=page, per_page=10
+    )
+    return render_template("admin/role_list.html", page_data=page_data)
+
+
+# 修改角色
+@admin.route("/role/edit/<int:id>/", methods=["GET", "POST"])
+@admin_login_required
+def role_edit(id=None):
+    form = RoleForm()
+    role = Role.query.get_or_404(int(id))
+    if request.method == "GET":
+        form.auths.data = list(map(int, role.auths.split(",")))
+    if form.validate_on_submit():
+        data = form.data
+        if data["name"] == role.name and data["auths"] == list(
+            map(int, role.auths.split(","))
+        ):
+            flash("老板，您未作修改哟~", "err")
+            return redirect(url_for("admin.role_edit", id=id))
+        role.name = data["name"]
+        role.auths = ",".join(map(str, data["auths"]))
+        db.session.add(role)
+        oplog = OpLog(
+            admin_id=session["admin_id"],
+            ip=request.remote_addr,
+            reason='修改角色"{0}"的信息'.format(data["name"]),
+        )
+        db.session.add(oplog)
+        db.session.commit()
+        flash("角色信息修改成功！", "ok")
+        return redirect(url_for("admin.role_edit", id=id))
+    return render_template("admin/role_edit.html", form=form, role=role)
 
 
 # 添加权限
