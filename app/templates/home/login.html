@@ -15,20 +15,36 @@
                     {{ msg }}
                 </div>
                 {% endfor %}
-                <form role="form">
+                {% for msg in get_flashed_messages(category_filter=['err']) %}
+                <div class="alert alert-danger alert-dismissible">
+                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                    <h4><i class="icon fa fa-ban"></i>出错了!</h4>
+                    {{ msg }}
+                </div>
+                {% endfor %}
+                <form role="form" method="POST">
                     <fieldset>
                         <div class="form-group">
-                            <label for="input_contact"><span class="glyphicon glyphicon-user"></span>账号</label>
-                            <input id="input_contact" class="form-control input-lg" placeholder="用户名/邮箱/手机号码" name="contact" type="text" autofocus>
+                            <span class="glyphicon glyphicon-user"></span>{{ form.email.label }}
+                            {{ form.email }}
                         </div>
-                        <div class="col-md-12" id="error_contact"></div>
+                        {% for err in form.email.errors %}
+                        <div class="col-md-12">
+                            <font style="color: red;">{{ err }}</font>
+                        </div>
+                        {% endfor %}
                         <div class="form-group">
-                            <label for="input_password"><span class="glyphicon glyphicon-lock"></span>密码</label>
-                            <input id="input_password" class="form-control input-lg" placeholder="密码" name="password" type="password" value="">
+                            <span class="glyphicon glyphicon-lock"></span>{{ form.pwd.label }}
+                            {{ form.pwd }}
                         </div>
-                        <div class="col-md-12" id="error_password"></div>
-                        <a href="{{ url_for('home.user') }}" class="btn btn-lg btn-success btn-block">登录</a>
+                        {% for err in form.pwd.errors %}
+                        <div class="col-md-12">
+                            <font style="color: red;">{{ err }}</font>
+                        </div>
+                        {% endfor %}
+                        {{ form.submit }}
                     </fieldset>
+                    {{ form.csrf_token }}
                 </form>
             </div>
         </div>

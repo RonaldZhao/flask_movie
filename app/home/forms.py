@@ -67,4 +67,24 @@ class RegisterForm(FlaskForm):
 
 
 class LoginForm(FlaskForm):
-    pass
+    email = StringField(
+        label="邮箱",
+        validators=[DataRequired("请输入邮箱!"), Email("邮箱格式不正确")],
+        description="邮箱",
+        render_kw={"class": "form-control input-lg", "placeholder": "邮箱"},
+    )
+    pwd = PasswordField(
+        label="密码",
+        validators=[DataRequired("请输入密码!")],
+        description="密码",
+        render_kw={"class": "form-control input-lg", "placeholder": "密码"},
+    )
+    submit = SubmitField(
+        label="登录", render_kw={"class": "btn btn-lg btn-success btn-block"}
+    )
+
+    def validate_email(self, field):
+        email = field.data
+        user = User.query.filter_by(email=email).count()
+        if user != 1:
+            raise ValidationError("此邮箱暂未注册！")
