@@ -61,7 +61,7 @@ class RegisterForm(FlaskForm):
         if User.query.filter_by(email=field.data).count() == 1:
             raise ValidationError("此邮箱已注册!")
 
-    def validate_name(self, field):
+    def validate_phone(self, field):
         if User.query.filter_by(phone=field.data).count() == 1:
             raise ValidationError("此手机号已存在!")
 

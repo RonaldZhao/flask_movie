@@ -7,7 +7,7 @@ from werkzeug.security import generate_password_hash
 
 from . import home
 from app.home.forms import RegisterForm, LoginForm
-from app.models import User
+from app.models import User, UserLog
 from app import db
 
 
@@ -36,6 +36,9 @@ def login():
             flash("密码错误！", "err")
             return redirect(url_for("home.login"))
         session["user"] = user.email
+        userlog = UserLog(user_id=user.id, ip=request.remote_addr)
+        db.session.add(userlog)
+        db.session.commit()
         return redirect(request.args.get("next") or url_for("home.index"))
     return render_template("home/login.html", form=form)
 

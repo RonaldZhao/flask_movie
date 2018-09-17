@@ -19,6 +19,7 @@ from app.models import (
     Comment,
     Moviecol,
     AdminLog,
+    UserLog,
 )
 
 
@@ -545,10 +546,19 @@ def adminloginlog_list(page=None):
 
 
 # 用户日志列表
-@admin.route("/userloginlog/list")
+@admin.route("/userloginlog/list/<int:page>/")
 @admin_login_required
-def userloginlog_list():
-    return render_template("admin/userloginlog_list.html")
+def userloginlog_list(page=None):
+    if page is None:
+        page = 1
+    page_data = (
+        UserLog.query.join(User)
+        .filter(UserLog.user_id == User.id)
+        .order_by(UserLog.login_time.desc())
+        .paginate(page=page, per_page=10)
+    )
+
+    return render_template("admin/userloginlog_list.html", page_data=page_data)
 
 
 # 添加角色
