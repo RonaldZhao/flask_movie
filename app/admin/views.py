@@ -20,6 +20,7 @@ from app.models import (
     Moviecol,
     AdminLog,
     UserLog,
+    OpLog,
 )
 
 
@@ -73,6 +74,7 @@ def login():
             flash("密码错误!", "err")
             return redirect(url_for("admin.login"))
         session["admin"] = data["account"]
+        session["admin_id"] = admin.id
         adminlog = AdminLog(admin_id=admin.id, ip=request.remote_addr)
         db.session.add(adminlog)
         db.session.commit()
@@ -85,6 +87,7 @@ def login():
 @admin_login_required
 def logout():
     session.pop("admin", None)
+    session.pop("admin_id", None)
     return redirect(url_for("admin.login"))
 
 
@@ -100,6 +103,10 @@ def pwd():
 
         admin.pwd = generate_password_hash(data["new_pwd"])
         db.session.add(admin)
+        oplog = OpLog(
+            admin_id=session["admin_id"], ip=request.remote_addr, reason="修改密码"
+        )
+        db.session.add(oplog)
         db.session.commit()
         flash("密码修改成功! 请重新登录.", "ok")
         return redirect(url_for("admin.logout"))
@@ -119,6 +126,12 @@ def tag_add():
             return redirect(url_for("admin.tag_add"))
         tag = Tag(name=data["name"])
         db.session.add(tag)
+        oplog = OpLog(
+            admin_id=session["admin_id"],
+            ip=request.remote_addr,
+            reason='添加标签"{0}"'.format(data["name"]),
+        )
+        db.session.add(oplog)
         db.session.commit()
         flash('标签"{0}"添加成功!'.format(data["name"]), "ok")
         return redirect(url_for("admin.tag_add"))
@@ -142,8 +155,14 @@ def tag_edit(id=None):
             flash('标签"{0}"已经存在!'.format(data["name"]), "err")
             return redirect(url_for("admin.tag_edit", id=id))
         flash('标签"{0}"已经被修改为"{1}"!'.format(tag.name, data["name"]), "ok")
+        oplog = OpLog(
+            admin_id=session["admin_id"],
+            ip=request.remote_addr,
+            reason='修改标签"{0}"为"{1}"'.format(tag.name, data["name"]),
+        )
         tag.name = data["name"]
         db.session.add(tag)
+        db.session.add(oplog)
         db.session.commit()
         return redirect(url_for("admin.tag_edit", id=id))
     return render_template("admin/tag_edit.html", form=form, tag=tag)
@@ -169,6 +188,12 @@ def tag_delete(id=None):
     if id:
         tag = Tag.query.filter_by(id=id).first_or_404()
         db.session.delete(tag)
+        oplog = OpLog(
+            admin_id=session["admin_id"],
+            ip=request.remote_addr,
+            reason='删除标签"{0}"'.format(tag.name),
+        )
+        db.session.add(oplog)
         db.session.commit()
         flash('标签"{0}"删除成功!'.format(tag.name), "ok")
     return redirect(url_for("admin.tag_list", page=1))
@@ -207,6 +232,12 @@ def movie_add():
             length=data["length"],
         )
         db.session.add(movie)
+        oplog = OpLog(
+            admin_id=session["admin_id"],
+            ip=request.remote_addr,
+            reason='添加电影"{0}"'.format(movie.title),
+        )
+        db.session.add(oplog)
         db.session.commit()
         flash('电影"{0}"添加成功!'.format(data["title"]), "ok")
         return redirect(url_for("admin.movie_add"))
@@ -221,8 +252,18 @@ def movie_delete(id=None):
     if id:
         movie = Movie.query.filter_by(id=id).first_or_404()
         db.session.delete(movie)
+        oplog = OpLog(
+            admin_id=session["admin_id"],
+            ip=request.remote_addr,
+            reason='删除电影"{0}"'.format(movie.title),
+        )
+        db.session.add(oplog)
         db.session.commit()
-        # TODO: 删除其资源
+        # 删除其资源
+        if os.path.exists(app.config["UP_DIR"] + movie.url):
+            os.remove(app.config["UP_DIR"] + movie.url)
+        if os.path.exists(app.config["UP_DIR"] + movie.logo):
+            os.remove(app.config["UP_DIR"] + movie.logo)
         flash('电影"{0}"删除成功!'.format(movie.title), "ok")
 
     return redirect(url_for("admin.movie_list", page=1))
@@ -315,6 +356,12 @@ def movie_edit(id=None):
 
         if changed:
             db.session.add(movie)
+            oplog = OpLog(
+                admin_id=session["admin_id"],
+                ip=request.remote_addr,
+                reason='修改电影"{0}"的信息'.format(movie.title),
+            )
+            db.session.add(oplog)
             db.session.commit()
             # 下面这两个删除就资源可能发生其他请求正在读取的时候无法删除的情况
             if movie.url != old_url:
@@ -351,6 +398,12 @@ def preview_add():
         form.logo.data.save(app.config["UP_DIR"] + logo)
         preview = Preview(title=data["title"], logo=logo)
         db.session.add(preview)
+        oplog = OpLog(
+            admin_id=session["admin_id"],
+            ip=request.remote_addr,
+            reason='添加电影预告"{0}"'.format(data["title"]),
+        )
+        db.session.add(oplog)
         db.session.commit()
         flash('电影预告"{0}"添加成功!'.format(preview.title), "ok")
         return redirect(url_for("admin.preview_add"))
@@ -365,6 +418,12 @@ def preview_delete(id=None):
         preview = Preview.query.get_or_404(int(id))
         old_logo = preview.logo
         db.session.delete(preview)
+        oplog = OpLog(
+            admin_id=session["admin_id"],
+            ip=request.remote_addr,
+            reason='删除电影预告"{0}"'.format(preview.title),
+        )
+        db.session.add(oplog)
         db.session.commit()
         # 同时删除其封面图
         os.remove(app.config["UP_DIR"] + old_logo)
@@ -416,6 +475,12 @@ def preview_edit(id=None):
 
         preview.title = data["title"]
         db.session.add(preview)
+        oplog = OpLog(
+            admin_id=session["admin_id"],
+            ip=request.remote_addr,
+            reason='修改电影预告"{0}"的信息'.format(preview.title),
+        )
+        db.session.add(oplog)
         db.session.commit()
         flash("影片预告信息修改成功!", "ok")
 
@@ -448,6 +513,12 @@ def user_delete(id=None):
         user = User.query.get_or_404(int(id))
         old_face = user.face
         db.session.delete(user)
+        oplog = OpLog(
+            admin_id=session["admin_id"],
+            ip=request.remote_addr,
+            reason='删除用户"{0}"'.format(user.name),
+        )
+        db.session.add(oplog)
         db.session.commit()
         # 同时删除其封面图
         if old_face != "" and os.path.exists(
@@ -491,6 +562,16 @@ def comment_delete(id=None):
     if id:
         comment = Comment.query.get_or_404(int(id))
         db.session.delete(comment)
+        movie = Movie.query.filter_by(id=comment.movie_id).first()
+        user = User.query.filter_by(id=comment.user_id).first()
+        oplog = OpLog(
+            admin_id=session["admin_id"],
+            ip=request.remote_addr,
+            reason='删除{0}用户"{0}"在电影"{1}"的评论'.format(
+                comment.add_time, user.name, movie.title
+            ),
+        )
+        db.session.add(oplog)
         db.session.commit()
         flash("删除评论成功!", "ok")
     return redirect(url_for("admin.comment_list", page=1))
@@ -518,16 +599,32 @@ def moviecol_delete(id=None):
     if id:
         moviecol = Moviecol.query.get_or_404(int(id))
         db.session.delete(moviecol)
+        movie = Movie.query.filter_by(id=moviecol.movie_id).first()
+        user = User.query.filter_by(id=moviecol.user_id).first()
+        oplog = OpLog(
+            admin_id=session["admin_id"],
+            ip=request.remote_addr,
+            reason='删除用户"{0}"收藏的电影"{1}"'.format(user.name, movie.title),
+        )
+        db.session.add(oplog)
         db.session.commit()
         flash("删除收藏成功!", "ok")
     return redirect(url_for("admin.moviecol_list"))
 
 
 # 操作日志列表
-@admin.route("/oplog/list")
+@admin.route("/oplog/list/<int:page>/")
 @admin_login_required
-def oplog_list():
-    return render_template("admin/oplog_list.html")
+def oplog_list(page=None):
+    if page is None:
+        page = 1
+    page_data = (
+        OpLog.query.join(Admin)
+        .filter(OpLog.admin_id == Admin.id)
+        .order_by(OpLog.add_time.desc())
+        .paginate(page=page, per_page=10)
+    )
+    return render_template("admin/oplog_list.html", page_data=page_data)
 
 
 # 管理员日志列表
@@ -565,6 +662,14 @@ def userloginlog_list(page=None):
 @admin.route("/role/add/")
 @admin_login_required
 def role_add():
+    """
+    oplog=OpLog(
+        admin_id=session["admin_id"],
+        ip=request.remote_addr,
+        reason='添加角色"{0}"'.format(role.name)
+    )
+    db.session.add(oplog)
+    """
     return render_template("admin/role_add.html")
 
 
@@ -579,6 +684,14 @@ def role_list():
 @admin.route("/auth/add/")
 @admin_login_required
 def auth_add():
+    """
+    oplog = OpLog(
+        admin_id=session["admin_id"],
+        ip=request.remote_addr,
+        reason='添加权限"{0}"'.format(auth.name),
+    )
+    db.session.add(oplog)
+    """
     return render_template("admin/auth_add.html")
 
 
@@ -593,6 +706,14 @@ def auth_list():
 @admin.route("/admin/add/")
 @admin_login_required
 def admin_add():
+    """
+    oplog = OpLog(
+        admin_id=session["admin_id"],
+        ip=request.remote_addr,
+        reason='添加管理员"{0}"'.format(admin.name),
+    )
+    db.session.add(oplog)
+    """
     return render_template("admin/admin_add.html")
 
 
