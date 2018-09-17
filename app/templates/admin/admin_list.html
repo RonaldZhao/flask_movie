@@ -1,10 +1,11 @@
 {% extends 'admin/admin.html' %}
+{% import 'ui/admin_page.html' as pg %}
 
 {% block content %}
 <section class="content-header">
     <h1>微电影管理系统</h1>
     <ol class="breadcrumb">
-        <li><a href="#"><i class="fa fa-dashboard"></i> 管理员管理</a></li>
+        <li><a href="#"><i class="fa fa-dashboard"></i>管理员管理</a></li>
         <li class="active">管理员列表</li>
     </ol>
 </section>
@@ -16,17 +17,28 @@
                     <h3 class="box-title">管理员列表</h3>
                     <div class="box-tools">
                         <div class="input-group input-group-sm" style="width: 150px;">
-                            <input type="text" name="table_search" class="form-control pull-right"
-                                   placeholder="请输入关键字...">
-
+                            <input type="text" name="table_search" class="form-control pull-right" placeholder="请输入关键字...">
                             <div class="input-group-btn">
-                                <button type="submit" class="btn btn-default"><i class="fa fa-search"></i>
-                                </button>
+                                <button type="submit" class="btn btn-default"><i class="fa fa-search"></i></button>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="box-body table-responsive no-padding">
+                    {% for msg in get_flashed_messages(category_filter=['ok']) %}
+                    <div class="alert alert-success alert-dismissible">
+                        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                        <h4><i class="icon fa fa-check"></i>非常棒!</h4>
+                        {{ msg }}
+                    </div>
+                    {% endfor %}
+                    {% for msg in get_flashed_messages(category_filter=['err']) %}
+                    <div class="alert alert-danger alert-dismissible">
+                        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                        <h4><i class="icon fa fa-ban"></i>出错了!</h4>
+                        {{ msg }}
+                    </div>
+                    {% endfor %}
                     <table class="table table-hover">
                         <tbody>
                         <tr>
@@ -36,33 +48,24 @@
                             <th>管理员角色</th>
                             <th>添加时间</th>
                         </tr>
+                        {% for admin in page_data.items %}
                         <tr>
-                            <td>1</td>
-                            <td>jinlong</td>
+                            <td>{{ admin.id }}</td>
+                            <td>{{ admin.name }}</td>
+                            {% if admin.is_super == 1 %}
                             <td>普通管理员</td>
-                            <td>系统管理员</td>
-                            <td>2017-06-01</td>
-                        </tr>
-                        <tr>
-                            <td>2</td>
-                            <td>jianbo</td>
+                            {% else %}
                             <td>超级管理员</td>
-                            <td>系统管理员</td>
-                            <td>2017-06-01</td>
+                            {% endif%}
+                            <td>{{ admin.role.name }}</td>
+                            <td>{{ admin.add_time }}</td>
                         </tr>
+                        {% endfor %}
                         </tbody>
                     </table>
                 </div>
                 <div class="box-footer clearfix">
-                    <ul class="pagination pagination-sm no-margin pull-right">
-                        <li><a href="#">首页</a></li>
-                        <li><a href="#">上一页</a></li>
-                        <li><a href="#">1</a></li>
-                        <li><a href="#">2</a></li>
-                        <li><a href="#">3</a></li>
-                        <li><a href="#">下一页</a></li>
-                        <li><a href="#">尾页</a></li>
-                    </ul>
+                    {{ pg.page(page_data, "admin.admin_list") }}
                 </div>
             </div>
         </div>

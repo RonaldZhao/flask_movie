@@ -17,6 +17,7 @@ from app.admin.forms import (
     PwdForm,
     AuthForm,
     RoleForm,
+    AdminForm,
 )
 from app.models import (
     Admin,
@@ -838,22 +839,47 @@ def auth_edit(id=None):
 
 
 # 添加管理员
-@admin.route("/admin/add/")
+@admin.route("/admin/add/", methods=["GET", "POST"])
 @admin_login_required
 def admin_add():
-    """
-    oplog = OpLog(
-        admin_id=session["admin_id"],
-        ip=request.remote_addr,
-        reason='添加管理员"{0}"'.format(admin.name),
-    )
-    db.session.add(oplog)
-    """
-    return render_template("admin/admin_add.html")
+    form = AdminForm()
+    if form.validate_on_submit():
+        data = form.data
+        if Admin.query.filter_by(name=data["name"]).count() == 1:
+            flash('管理员"{0}"已经存在！'.format(data["name"]), "err")
+            return redirect(url_for("admin.admin_add"))
+        from werkzeug.security import generate_password_hash
+
+        admin = Admin(
+            name=data["name"],
+            pwd=generate_password_hash(data["pwd"]),
+            is_super=1,
+            role_id=data["role_id"],
+        )
+        db.session.add(admin)
+        oplog = OpLog(
+            admin_id=session["admin_id"],
+            ip=request.remote_addr,
+            reason='添加管理员"{0}"'.format(data["name"]),
+        )
+        db.session.add(oplog)
+        db.session.commit()
+        flash('管理员"{0}"添加成功！'.format(data["name"]), "ok")
+        return redirect(url_for("admin.admin_add"))
+    return render_template("admin/admin_add.html", form=form)
 
 
 # 管理员列表
-@admin.route("/admin/list/")
+@admin.route("/admin/list/<int:page>/", methods=["GET"])
 @admin_login_required
-def admin_list():
-    return render_template("admin/admin_list.html")
+def admin_list(page=None):
+    if page is None:
+        page = 1
+    page_data = (
+        Admin.query.join(Role)
+        .filter(Role.id == Admin.role_id)
+        .order_by(Admin.add_time.desc())
+        .paginate(page=page, per_page=10)
+    )
+    return render_template("admin/admin_list.html", page_data=page_data)
+
