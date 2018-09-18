@@ -1,5 +1,6 @@
 # 视图处理文件
 import os
+import stat
 import uuid
 import datetime
 
@@ -258,7 +259,7 @@ def movie_add():
 
         if not os.path.exists(app.config["UP_DIR"]):
             os.makedirs(app.config["UP_DIR"])
-            os.chmod(app.config["UP_DIR"], "rw")
+            os.chmod(app.config["UP_DIR"], stat.S_IRWXU)
 
         url = change_filename(file_url)
         logo = change_filename(file_logo)
@@ -390,7 +391,7 @@ def movie_edit(id=None):
 
         if not os.path.exists(app.config["UP_DIR"]):
             os.makedirs(app.config["UP_DIR"])
-            os.chmod(app.config["UP_DIR"], "rw")
+            os.chmod(app.config["UP_DIR"], stat.S_IRWXU)
 
         if type(form.url.data) != str and form.url.data.filename != "":
             file_url = secure_filename(form.url.data.filename)
@@ -443,7 +444,7 @@ def preview_add():
 
         if not os.path.exists(app.config["UP_DIR"]):
             os.makedirs(app.config["UP_DIR"])
-            os.chmod(app.config["UP_DIR"], "rw")
+            os.chmod(app.config["UP_DIR"], stat.S_IRWXU)
 
         logo = change_filename(file_logo)
         form.logo.data.save(app.config["UP_DIR"] + logo)

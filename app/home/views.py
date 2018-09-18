@@ -1,14 +1,18 @@
 # 视图处理文件
+import os
+import stat
 import uuid
+from datetime import datetime
 from functools import wraps
 
 from flask import render_template, redirect, url_for, flash, session, request
 from werkzeug.security import generate_password_hash
+from werkzeug.utils import secure_filename
 
 from . import home
-from app.home.forms import RegisterForm, LoginForm
+from app.home.forms import RegisterForm, LoginForm, UserDetailForm, PwdForm
 from app.models import User, UserLog
-from app import db
+from app import db, app
 
 
 def user_login_required(func):
@@ -19,6 +23,16 @@ def user_login_required(func):
         return func(*args, **kwargs)
 
     return deco
+
+
+def change_filename(file_name):
+    file_info = os.path.splitext(file_name)
+    file_name = (
+        datetime.now().strftime("%Y%m%d%H%M%S")
+        + str(uuid.uuid4().hex)
+        + file_info[-1]
+    )
+    return file_name
 
 
 @home.route("/")
@@ -71,16 +85,70 @@ def register():
     return render_template("home/register.html", form=form)
 
 
-@home.route("/user/")
+@home.route("/user/", methods=["GET", "POST"])
 @user_login_required
 def user():
-    return render_template("home/user.html")
+    form = UserDetailForm()
+    form.face.validators.clear()
+    user = User.query.filter_by(email=session["user"]).first()
+    if request.method == "GET":
+        form.name.data = user.name
+        form.email.data = user.email
+        form.phone.data = user.phone
+        form.info.data = user.info
+    if form.validate_on_submit():
+        data = form.data
+        changed = False
+        if data["name"] != user.name:
+            user.name = data["name"]
+            changed = True
+        if data["email"] != user.email:
+            user.email = data["email"]
+            changed = True
+        if data["phone"] != user.phone:
+            user.phone = data["phone"]
+            changed = True
+        if type(form.face.data) != str and form.face.data.filename != "":
+            if not os.path.exists(app.config["FACE_DIR"]):
+                os.makedirs(app.config["FACE_DIR"])
+                os.chmod(app.config["FACE_DIR"], stat.S_IRWXU)
+            if user.face != "" and os.path.exists(
+                app.config["FACE_DIR"] + user.face
+            ):
+                os.remove(app.config["FACE_DIR"] + user.face)
+            file_face = secure_filename(form.face.data.filename)
+            user.face = change_filename(file_face)
+            form.face.data.save(app.config["FACE_DIR"] + user.face)
+            changed = True
+        if data["info"] != user.info:
+            user.info = data["info"]
+            changed = True
+        if not changed:
+            flash("不作修改则不需要保存的哟~~~", "err")
+        else:
+            flash("修改信息成功！", "ok")
+            db.session.add(user)
+            db.session.commit()
+        return redirect(url_for("home.user"))
+    return render_template("home/user.html", form=form, user=user)
 
 
-@home.route("/pwd/")
+@home.route("/pwd/", methods=["GET", "POST"])
 @user_login_required
 def pwd():
-    return render_template("home/pwd.html")
+    form = PwdForm()
+    if form.validate_on_submit():
+        data = form.data
+        user = User.query.filter_by(email=session["user"]).first()
+        if not user.check_pwd(data["old_pwd"]):
+            flash("当前密码输入错误！", "err")
+            return redirect(url_for("home.pwd"))
+        user.pwd = generate_password_hash(data["new_pwd"])
+        db.session.add(user)
+        db.session.commit()
+        flash("密码修改成功！请重新登录", "ok")
+        return redirect(url_for("home.logout"))
+    return render_template("home/pwd.html", form=form)
 
 
 @home.route("/comments/")

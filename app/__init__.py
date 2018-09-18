@@ -17,6 +17,9 @@ app.config["SECRET_KEY"] = uuid4().hex
 app.config["UP_DIR"] = os.path.join(
     os.path.abspath(os.path.dirname(__file__)), "static/uploads/"
 )
+app.config["FACE_DIR"] = os.path.join(
+    os.path.abspath(os.path.dirname(__file__)), "static/uploads/faces/"
+)
 app.debug = True
 
 db = SQLAlchemy(app)
