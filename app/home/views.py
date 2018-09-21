@@ -11,7 +11,7 @@ from werkzeug.utils import secure_filename
 
 from . import home
 from app.home.forms import RegisterForm, LoginForm, UserDetailForm, PwdForm
-from app.models import User, UserLog
+from app.models import User, UserLog, Preview
 from app import db, app
 
 
@@ -177,9 +177,10 @@ def moviecol():
     return render_template("home/moviecol.html")
 
 
-@home.route("/animation/")
+@home.route("/animation/", methods=["GET"])
 def animation():
-    return render_template("home/animation.html")
+    data = Preview.query.all()
+    return render_template("home/animation.html", data=data)
 
 
 @home.route("/search/")
