@@ -707,7 +707,7 @@ def adminloginlog_list(page=None):
 
 
 # 用户日志列表
-@admin.route("/userloginlog/list/<int:page>/")
+@admin.route("/userloginlog/list/<int:page>/", methods=["GET"])
 @admin_login_required
 @admin_auth
 def userloginlog_list(page=None):
@@ -719,7 +719,6 @@ def userloginlog_list(page=None):
         .order_by(UserLog.login_time.desc())
         .paginate(page=page, per_page=10)
     )
-
     return render_template("admin/userloginlog_list.html", page_data=page_data)
 
 

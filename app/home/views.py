@@ -157,10 +157,18 @@ def comments():
     return render_template("home/comments.html")
 
 
-@home.route("/loginlog/")
+@home.route("/loginlog/list/<int:page>/", methods=["GET"])
 @user_login_required
-def loginlog():
-    return render_template("home/loginlog.html")
+def loginlog(page=None):
+    if page is None:
+        page = 1
+    page_data = (
+        UserLog.query.join(User)
+        .filter(UserLog.user_id == User.id)
+        .order_by(UserLog.login_time.desc())
+        .paginate(page=page, per_page=10)
+    )
+    return render_template("home/loginlog.html", page_data=page_data)
 
 
 @home.route("/moviecol/")
