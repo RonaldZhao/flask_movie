@@ -1,4 +1,5 @@
 {% extends 'home/layout.html' %}
+{% import 'ui/admin_page.html' as pg %}
 
 {% block content %}
 <!--热门电影-->
@@ -21,60 +22,54 @@
                     <tr>
                         <td style="width:10%;">电影标签</td>
                         <td style="width:90%;">
-                            <a class="label label-info"><span class="glyphicon glyphicon-tag"></span>标签一</a>
-                            <a class="label label-info"><span class="glyphicon glyphicon-tag"></span>标签一</a>
-                            <a class="label label-info"><span class="glyphicon glyphicon-tag"></span>标签一</a>
-                            <a class="label label-info"><span class="glyphicon glyphicon-tag"></span>标签一</a>
-                            <a class="label label-info"><span class="glyphicon glyphicon-tag"></span>标签一</a>
+                            {% for tag in tags %}
+                            <a href="{{ url_for('home.index', page=1) }}?tid={{ tag.id }}&star={{ p['star'] }}&time={{ p['time'] }}&pm={{ p['pm'] }}&cm={{ p['cm'] }}" class="label label-info"><span class="glyphicon glyphicon-tag"></span>{{ tag.name }}</a>
+                            {% endfor %}
                     </tr>
                     <tr>
                         <td>电影星级</td>
                         <td>
-                            <a class="label label-warning"><span class="glyphicon glyphicon-star"></span>一星</a>
-                            <a class="label label-warning"><span class="glyphicon glyphicon-star"></span>二星</a>
-                            <a class="label label-warning"><span class="glyphicon glyphicon-star"></span>三星</a>
-                            <a class="label label-warning"><span class="glyphicon glyphicon-star"></span>四星</a>
-                            <a class="label label-warning"><span class="glyphicon glyphicon-star"></span>五星</a>
+                            {% for i in range(1, 6) %}
+                            <a href="{{ url_for('home.index', page=1) }}?tid={{ p['tid'] }}&star={{ i }}&time={{ p['time'] }}&pm={{ p['pm'] }}&cm={{ p['cm'] }}" class="label label-warning"><span class="glyphicon glyphicon-star"></span>{{ i }}星</a>
+                            {% endfor %}
                         </td>
                     </tr>
                     <tr>
                         <td>上映时间</td>
                         <td>
-                            <a class="label label-default"><span class="glyphicon glyphicon-time"></span>最近</span></a>
-                            <a class="label label-default"><span class="glyphicon glyphicon-time"></span>2017</span></a>
-                            <a class="label label-default"><span class="glyphicon glyphicon-time"></span>2016</span></a>
-                            <a class="label label-default"><span class="glyphicon glyphicon-time"></span>2015</span></a>
-                            <a class="label label-default"><span class="glyphicon glyphicon-time"></span>更早</span></a>
+                            <a href="{{ url_for('home.index', page=1) }}?tid={{ p['tid'] }}&star={{ p['star'] }}&time=1&pm={{ p['pm'] }}&cm={{ p['cm'] }}" class="label label-default"><span class="glyphicon glyphicon-time"></span>最近</span></a>
+                            <a href="{{ url_for('home.index', page=1) }}?tid={{ p['tid'] }}&star={{ p['star'] }}&time=2&pm={{ p['pm'] }}&cm={{ p['cm'] }}" class="label label-default"><span class="glyphicon glyphicon-time"></span>更早</span></a>
                         </td>
                     </tr>
                     <tr>
                         <td>播放数量</td>
                         <td>
-                            <a class="label label-success"><span class="glyphicon glyphicon-arrow-down"></span>从高到底</span></a>
-                            <a class="label label-danger"><span class="glyphicon glyphicon-arrow-up"></span>从低到高</span></a>
+                            <a href="{{ url_for('home.index', page=1) }}?tid={{ p['tid'] }}&star={{ p['star'] }}&time={{ p['time'] }}&pm=1&cm={{ p['cm'] }}" class="label label-success"><span class="glyphicon glyphicon-arrow-down"></span>从高到底</span></a>
+                            <a href="{{ url_for('home.index', page=1) }}?tid={{ p['tid'] }}&star={{ p['star'] }}&time={{ p['time'] }}&pm=2&cm={{ p['cm'] }}" class="label label-danger"><span class="glyphicon glyphicon-arrow-up"></span>从低到高</span></a>
                         </td>
                     </tr>
                     <tr>
                         <td>评论数量</td>
                         <td>
-                            <a class="label label-success"><span class="glyphicon glyphicon-arrow-down"></span>从高到底</span></a>
-                            <a class="label label-danger"><span class="glyphicon glyphicon-arrow-up"></span>从低到高</span></a>
+                            <a href="{{ url_for('home.index', page=1) }}?tid={{ p['tid'] }}&star={{ p['star'] }}&time={{ p['time'] }}&pm={{ p['pm'] }}&cm=1" class="label label-success"><span class="glyphicon glyphicon-arrow-down"></span>从高到底</span></a>
+                            <a href="{{ url_for('home.index', page=1) }}?tid={{ p['tid'] }}&star={{ p['star'] }}&time={{ p['time'] }}&pm={{ p['pm'] }}&cm=2" class="label label-danger"><span class="glyphicon glyphicon-arrow-up"></span>从低到高</span></a>
                         </td>
                     </tr>
                 </table>
             </div>
-            {% for v in range(12) %}
+            {% for movie in page_data.items %}
             <div class="col-md-3">
-                <p><span style="color:#999;font-style: italic;">DARKSIDE</span></p>
+                <p><span style="color:#999;font-style: italic;">{{ movie.title }}</span></p>
                 <div class="movielist text-center">
-                    <img src="holder.js/262x166?random=yes" class="img-responsive center-block" alt="">
+                    <img src="{{ url_for('static', filename='uploads/'+movie.logo) }}" class="img-responsive center-block" alt="">
                     <div class="text-left" style="margin:8px auto 0;text-align: center;">
                         <div>
+                            {% for i in range(movie.star) %}
                             <span class="glyphicon glyphicon-star" style="color:#FFD119"></span>
-                            <span class="glyphicon glyphicon-star" style="color:#FFD119"></span>
-                            <span class="glyphicon glyphicon-star" style="color:#FFD119"></span>
+                            {% endfor %}
+                            {% for i in range(5-movie.star) %}
                             <span class="glyphicon glyphicon-star-empty" style="color:#FFD119"></span>
-                            <span class="glyphicon glyphicon-star-empty" style="color:#FFD119"></span>
+                            {% endfor %}
                         </div>
                     </div>
                     <a href="{{ url_for('home.play') }}" class="btn btn-primary" target="_blank" role="button"><span class="glyphicon glyphicon-play"></span>播放</a>
@@ -82,31 +77,7 @@
             </div>
             {% endfor %}
             <div class="col-md-12">
-                <nav aria-label="Page navigation">
-                    <ul class="pagination">
-                        <li>
-                            <a href="#" aria-label="First">
-                                <span aria-hidden="true">首页</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#" aria-label="Previous">
-                                <span aria-hidden="true">上一页</span>
-                            </a>
-                        </li>
-                        <li><a href="#">1/10</a></li>
-                        <li>
-                            <a href="#" aria-label="Next">
-                                <span aria-hidden="true">下一页</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="#" aria-label="Last">
-                                <span aria-hidden="true">尾页</span>
-                            </a>
-                        </li>
-                    </ul>
-                </nav>
+                {{ pg.page(page_data, "home.index")}}
             </div>
         </div>
     </div>

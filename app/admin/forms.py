@@ -13,7 +13,7 @@ from wtforms.validators import DataRequired, ValidationError, EqualTo
 
 from app.models import Admin, Tag, Auth, Role
 
-tags = Tag.query.all()
+#tags = Tag.query.all()
 auth_list = Auth.query.all()
 role_list = Role.query.all()
 
@@ -100,7 +100,7 @@ class MovieForm(FlaskForm):
         label="标签",
         validators=[DataRequired("请选择标签!")],
         coerce=int,
-        choices=[(v.id, v.name) for v in tags],
+        choices=[(v.id, v.name) for v in Tag.query.all()],
         description="影片标签",
         render_kw={"class": "form-control"},
     )

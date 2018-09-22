@@ -5,13 +5,21 @@ import uuid
 from datetime import datetime
 from functools import wraps
 
-from flask import render_template, redirect, url_for, flash, session, request
+from flask import (
+    render_template,
+    redirect,
+    url_for,
+    flash,
+    session,
+    request,
+    abort,
+)
 from werkzeug.security import generate_password_hash
 from werkzeug.utils import secure_filename
 
 from . import home
 from app.home.forms import RegisterForm, LoginForm, UserDetailForm, PwdForm
-from app.models import User, UserLog, Preview
+from app.models import User, UserLog, Preview, Tag, Movie
 from app import db, app
 
 
@@ -35,9 +43,51 @@ def change_filename(file_name):
     return file_name
 
 
-@home.route("/")
-def index():
-    return render_template("home/index.html")
+@home.route("/", methods=["GET"])
+def welcome():
+    return redirect(url_for("home.index", page=1))
+
+
+@home.route("/<int:page>/", methods=["GET"])
+def index(page=None):
+    tags = Tag.query.all()
+    page_data = Movie.query
+
+    # TODO: 当输入非法参数时的处理
+    tid = request.args.get("tid", 0)
+    if int(tid) > 0:
+        page_data = page_data.filter_by(tag_id=int(tid))
+
+    star = request.args.get("star", 0)
+    if int(star) in range(1, 6):
+        page_data = page_data.filter_by(star=int(star))
+
+    time = request.args.get("time", 0)
+    if int(time) == 1:
+        page_data = page_data.order_by(Movie.add_time.desc())
+    elif int(time) == 2:
+        page_data = page_data.order_by(Movie.add_time.asc())
+
+    pm = request.args.get("pm", 0)
+    if int(pm) == 1:
+        page_data = page_data.order_by(Movie.playnum.desc())
+    elif int(pm) == 2:
+        page_data = page_data.order_by(Movie.playnum.asc())
+
+    cm = request.args.get("cm", 0)
+    if int(cm) == 1:
+        page_data = page_data.order_by(Movie.commentnum.desc())
+    elif int(cm) == 2:
+        page_data = page_data.order_by(Movie.commentnum.asc())
+
+    if page is None:
+        page = 1
+    
+    page_data = page_data.paginate(page=page, per_page=12)
+    p = dict(tid=tid, star=star, time=time, pm=pm, cm=cm)
+    return render_template(
+        "home/index.html", tags=tags, p=p, page_data=page_data
+    )
 
 
 @home.route("/login/", methods=["GET", "POST"])
