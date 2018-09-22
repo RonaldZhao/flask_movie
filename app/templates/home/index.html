@@ -61,7 +61,7 @@
             <div class="col-md-3">
                 <p><span style="color:#999;font-style: italic;">{{ movie.title }}</span></p>
                 <div class="movielist text-center">
-                    <img src="{{ url_for('static', filename='uploads/'+movie.logo) }}" class="img-responsive center-block" alt="">
+                    <img src="{{ url_for('static', filename='uploads/'+movie.logo) }}" class="img-responsive center-block" alt="" style="max-height:147.65px;">
                     <div class="text-left" style="margin:8px auto 0;text-align: center;">
                         <div>
                             {% for i in range(movie.star) %}
@@ -72,7 +72,7 @@
                             {% endfor %}
                         </div>
                     </div>
-                    <a href="{{ url_for('home.play') }}" class="btn btn-primary" target="_blank" role="button"><span class="glyphicon glyphicon-play"></span>播放</a>
+                    <a href="{{ url_for('home.play', id=movie.id) }}" class="btn btn-primary" target="_blank" role="button"><span class="glyphicon glyphicon-play"></span>播放</a>
                 </div>
             </div>
             {% endfor %}

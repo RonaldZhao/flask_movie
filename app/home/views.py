@@ -82,7 +82,7 @@ def index(page=None):
 
     if page is None:
         page = 1
-    
+
     page_data = page_data.paginate(page=page, per_page=12)
     p = dict(tid=tid, star=star, time=time, pm=pm, cm=cm)
     return render_template(
@@ -233,11 +233,29 @@ def animation():
     return render_template("home/animation.html", data=data)
 
 
-@home.route("/search/")
-def search():
-    return render_template("home/search.html")
+@home.route("/search/<int:page>/", methods=["GET"])
+def search(page=None):
+    if page is None:
+        page = 1
+    key_words = request.args.get("key_words", "")
+    if len(key_words) > 0:
+        page_data = (
+            Movie.query.filter(Movie.title.ilike("%" + key_words + "%"))
+            .order_by(Movie.add_time.desc())
+            .paginate(page=page, per_page=1)
+        )
+    else:
+        page_data = None
+    return render_template(
+        "home/search.html", key_words=key_words, page_data=page_data
+    )
 
 
-@home.route("/play/")
-def play():
-    return render_template("home/play.html")
+@home.route("/play/<int:id>/", methods=["GET"])
+def play(id=None):
+    movie = (
+        Movie.query.join(Tag)
+        .filter(Tag.id == Movie.tag_id, Movie.id == int(id))
+        .first_or_404()
+    )
+    return render_template("home/play.html", movie=movie)
