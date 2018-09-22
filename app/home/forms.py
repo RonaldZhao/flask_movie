@@ -144,3 +144,15 @@ class PwdForm(FlaskForm):
         render_kw={"class": "form-control", "placeholder": "新密码"},
     )
     submit = SubmitField(label="保存修改", render_kw={"class": "btn btn-success"})
+
+
+class CommentForm(FlaskForm):
+    content = TextAreaField(
+        label="评论内容",
+        validators=[DataRequired("你说啥？")],
+        description="评论内容",
+        render_kw={"id": "input_content"},
+    )
+    submit = SubmitField(
+        label="发表评论", render_kw={"class": "btn btn-success", "id": "btn-sub"}
+    )
