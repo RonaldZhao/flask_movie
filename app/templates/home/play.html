@@ -213,6 +213,26 @@
 		height: 500,
 		width: 774,
 	});
+    $(document).ready(function(){
+        $("#btn-col").click(function(){
+            var mid = "{{ movie.id }}";
+            var email = "{{ session['user'] }}";
+            $.ajax({
+                url: "{{ url_for('home.moviecol_add') }}",
+                type: "GET",
+                data: "mid=" + mid + "&email=" + email,
+                dataType: "json",
+                success: function(res){
+                    console.log(res["ok"]);
+                    if (res["ok"] === true) {
+                        alert("收藏成功！");
+                    } else {
+                        alert("此电影已收藏，无需重复收藏！");
+                    }
+                }
+            });
+        });
+    });
 </script>
 <!--播放页面-->
 {% endblock %}

@@ -17,7 +17,7 @@ from app.home.forms import (
     PwdForm,
     CommentForm,
 )
-from app.models import User, UserLog, Preview, Tag, Movie, Comment
+from app.models import User, UserLog, Preview, Tag, Movie, Comment, Moviecol
 from app import db, app
 
 
@@ -230,6 +230,24 @@ def loginlog(page=None):
         .paginate(page=page, per_page=10)
     )
     return render_template("home/loginlog.html", page_data=page_data)
+
+
+@home.route("/moviecol/add/", methods=["GET"])
+@user_login_required
+def moviecol_add():
+    mid = request.args.get("mid", "")
+    email = request.args.get("email", "")
+    user = User.query.filter_by(email=email).first()
+    count = Moviecol.query.filter_by(movie_id=int(mid), user_id=user.id).count()
+    import json
+
+    if count == 1:
+        return json.dumps(dict(ok=False))
+    else:
+        moviecol = Moviecol(movie_id=mid, user_id=user.id)
+        db.session.add(moviecol)
+        db.session.commit()
+        return json.dumps(dict(ok=True))
 
 
 @home.route("/moviecol/")
