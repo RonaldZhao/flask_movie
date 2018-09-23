@@ -250,10 +250,19 @@ def moviecol_add():
         return json.dumps(dict(ok=True))
 
 
-@home.route("/moviecol/")
+@home.route("/moviecol/<int:page>/", methods=["GET"])
 @user_login_required
-def moviecol():
-    return render_template("home/moviecol.html")
+def moviecol(page=None):
+    if page is None:
+        page = 1
+    page_data = (
+        Moviecol.query.join(Movie)
+        .join(User)
+        .filter(Movie.id == Moviecol.movie_id, User.email == session["user"])
+        .order_by(Moviecol.add_time.desc())
+        .paginate(page=page, per_page=1)
+    )
+    return render_template("home/moviecol.html", page_data=page_data)
 
 
 @home.route("/animation/", methods=["GET"])
