@@ -24,6 +24,14 @@
 
 > 退出虚拟环境命令: `.\movie\Scripts\deactivate.bat`
 
+::: tip 工具包安装顺序
+1. pip list --outdated  # 先把该升级的升级
+2. pip install --upgrade flask
+3. pip install --upgrade flask-sqlalchemy
+4. pip install --upgrade PyMySQL
+5. pip install --upgrade Flask-WTF
+:::
+
 ## 安装 Flask
 
 请先执行`pip freeze`确保没有输出, 即环境干净, 如果有输出请检查是否是在创建虚拟环境的时候没有使用`--no-site-packages`参数.(虚拟环境的删除只要把该目录删除即可)
