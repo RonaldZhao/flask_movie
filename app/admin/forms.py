@@ -13,7 +13,6 @@ from wtforms.validators import DataRequired, ValidationError, EqualTo
 
 from app.models import Admin, Tag, Auth, Role
 
-#tags = Tag.query.all()
 auth_list = Auth.query.all()
 role_list = Role.query.all()
 

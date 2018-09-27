@@ -30,6 +30,7 @@
 3. pip install --upgrade flask-sqlalchemy
 4. pip install --upgrade PyMySQL
 5. pip install --upgrade Flask-WTF
+6. pip install --upgrade Flask-Redis
 :::
 
 ## 安装 Flask

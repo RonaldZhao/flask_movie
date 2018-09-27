@@ -4,6 +4,7 @@ from uuid import uuid4
 
 from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
+from flask_redis import FlaskRedis
 import pymysql
 
 app = Flask(__name__)
@@ -20,9 +21,11 @@ app.config["UP_DIR"] = os.path.join(
 app.config["FACE_DIR"] = os.path.join(
     os.path.abspath(os.path.dirname(__file__)), "static/uploads/faces/"
 )
+app.config["REDIS_URL"] = "redis://localhost:6379/0"
 app.debug = True
 
 db = SQLAlchemy(app)
+rds = FlaskRedis(app)
 
 # 下面的蓝图必须在创建db实例后再导入
 from app.home import home as home_blueprint

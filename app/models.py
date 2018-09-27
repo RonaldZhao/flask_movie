@@ -9,8 +9,12 @@ from flask_sqlalchemy import SQLAlchemy
 import pymysql
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:123456@localhost/movie'  # 用于连接数据库
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True  # 使Flask-SQLAlchemy追踪对象的修改并且发送信号
+app.config[
+    "SQLALCHEMY_DATABASE_URI"
+] = "mysql+pymysql://root:123456@localhost/movie"  # 用于连接数据库
+app.config[
+    "SQLALCHEMY_TRACK_MODIFICATIONS"
+] = True  # 使Flask-SQLAlchemy追踪对象的修改并且发送信号
 db = SQLAlchemy(app)
 """
 

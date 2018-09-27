@@ -3,7 +3,10 @@
 
 {% block css%}
 <!--播放页面-->
-<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='jwplayer/skins/stormtrooper.css') }}">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='dplayer/DPlayer.min.css') }}">
+<!-- <script src="{{ url_for('static', filename='dplayer/flv.min.js') }}"></script>
+<script src="{{ url_for('static', filename='dplayer/hls.min.js') }}"></script> -->
+<script src="{{ url_for('static', filename='dplayer/DPlayer.min.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='ueditor/ueditor.config.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='ueditor/ueditor.all.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='ueditor/lang/zh-cn/zh-cn.js') }}"></script>
@@ -24,14 +27,14 @@
 {% block content %}
 <div class="row">
     <div class="col-md-8">
-        <div id="moviecontainer"></div>
+        <div id="dplayer"></div>
     </div>
-    <div class="col-md-4" style="height:500px;">
+    <div class="col-md-4">
         <div class="panel panel-info">
             <div class="panel-heading">
                 <h3 class="panel-title"><span class="glyphicon glyphicon-facetime-video"></span>电影介绍</h3>
             </div>
-            <div class="panel-body" style="height:459px;">
+            <div class="panel-body">
                 <table class="table">
                     <tr>
                         <td style="width:30%;color:#ccc;font-weight:bold;font-style:italic;">
@@ -94,7 +97,7 @@
                         <td style="color:#ccc;font-weight:bold;font-style:italic;">
                             <span class="glyphicon glyphicon-picture"></span>影片介绍
                         </td>
-                        <td>
+                        <td style="height:50px;display:inline-block;overflow:hidden;">
                             {{ movie.info }}
                         </td>
                     </tr>
@@ -173,7 +176,6 @@
 
 {% block js %}
 <!--播放页面-->
-<script src="{{ url_for('static', filename='jwplayer/jwplayer.js') }}"></script>
 <script>
     var ue = UE.getEditor('input_content',{
         toolbars: [
@@ -182,37 +184,19 @@
         initialFrameWidth:"100%",
         initialFrameHeight:"100",
     });
-	jwplayer.key = "P9VTqT/X6TSP4gi/hy1wy23BivBhjdzVjMeOaQ==";
-	jwplayer("moviecontainer").setup({
-		flashplayer: "{{ url_for('static', filename='jwplayer/jwplayer.flash.swf') }}",
-		playlist: [{
-			file: "{{ url_for('static', filename='uploads/'+movie.url) }}",
-			title: "{{ movie.title }}"
-		}],
-		modes: [{
-			type: "html5"
-		}, {
-			type: "flash",
-			src: "{{ url_for('static', filename='jwplayer/jwplayer.flash.swf') }}"
-		}, {
-			type: "download"
-		}],
-		skin: {
-            name: "bekle"
-            // name: "glow"
-            // name: "roundster"
-			// name: "stormtrooper"
-            // name: "vapor"
-            // name: "five"
-            // name: "six"
-            // name: "seven"
-            // name: "beelden"
-		},
-		"playlist.position": "left",
-		"playlist.size": 400,
-		height: 500,
-		width: 774,
-	});
+	const dp = new DPlayer({
+        element: document.getElementById('dplayer'),
+        screenshot: true,
+        video: {
+            url: "{{ url_for('static', filename='uploads/'+movie.url) }}",
+            //pic: "{{ url_for('static', filename='uploads/'+movie.logo) }}",
+            //thumbnails: "{{ url_for('static', filename='uploads/'+movie.logo) }}"
+        },
+        danmaku: {
+            id: '{{ movie.id }}',
+            api: "{{ url_for('home.dm') }}"
+        }
+    });
     $(document).ready(function(){
         $("#btn-col").click(function(){
             var mid = "{{ movie.id }}";

@@ -5,7 +5,15 @@ import uuid
 from datetime import datetime
 from functools import wraps
 
-from flask import render_template, redirect, url_for, flash, session, request
+from flask import (
+    render_template,
+    redirect,
+    url_for,
+    flash,
+    session,
+    request,
+    Response,
+)
 from werkzeug.security import generate_password_hash
 from werkzeug.utils import secure_filename
 
@@ -18,7 +26,7 @@ from app.home.forms import (
     CommentForm,
 )
 from app.models import User, UserLog, Preview, Tag, Movie, Comment, Moviecol
-from app import db, app
+from app import db, app, rds
 
 
 def user_login_required(func):
@@ -260,7 +268,7 @@ def moviecol(page=None):
         .join(User)
         .filter(Movie.id == Moviecol.movie_id, User.email == session["user"])
         .order_by(Moviecol.add_time.desc())
-        .paginate(page=page, per_page=1)
+        .paginate(page=page, per_page=10)
     )
     return render_template("home/moviecol.html", page_data=page_data)
 
@@ -322,3 +330,36 @@ def play(id=None, page=None):
     return render_template(
         "home/play.html", movie=movie, form=form, page_data=page_data
     )
+
+
+@home.route("/dm/", methods=["GET", "POST"])
+def dm():
+    import json
+
+    if request.method == "GET":
+        id = request.args.get("id")
+        key = "movie" + str(id)
+        if rds.llen(key):
+            dms = rds.lrange(key, 0, -1)
+            ret = {"code": 1, "danmaku": [json.loads(v) for v in dms]}
+        else:
+            ret = {"code": 1, "danmaku": []}
+        res = json.dumps(ret)
+    if request.method == "POST":
+        data = json.loads(request.get_data())
+        print("------------------->", data)
+        msg = {
+            "__v": 0,
+            "author": data["author"],
+            "time": data["time"],
+            "text": data["text"],
+            "color": data["color"],
+            "type": data["type"],
+            "ip": request.remote_addr,
+            "_id": datetime.now().strftime("%Y%m%d%H%M%S") + uuid.uuid4().hex,
+            "player": [data["player"]]
+        }
+        ret = {"code": 1, "data": msg}
+        res = json.dumps(ret)
+        rds.lpush("movie" + str(data["player"]), json.dumps(msg))
+    return Response(res, mimetype="application/json")
