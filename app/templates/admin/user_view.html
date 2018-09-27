@@ -49,10 +49,10 @@
                         <tr>
                             <td class="td_bd">头像：</td>
                             <td>
-                                {% if user.face == '' %}
+                                {% if user.face == "" %}
                                 <img data-src="holder.js/100x100?random=yes" class="img-responsive" alt="">
                                 {% else %}
-                                <img src="{{ url_for('static', filename='uploads/users/'+user.face) }}" style="width:100px;height:100px;" class="img-responsive" alt="">
+                                <img src="{{ url_for('static', filename='uploads/faces/'+user.face) }}" style="width:100px;height:100px;" class="img-responsive" alt="">
                                 {% endif %}
                             </td>
                         </tr>
