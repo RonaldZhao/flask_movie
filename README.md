@@ -411,3 +411,55 @@ def admin_list():
 4. 在`app/templates/admin/login.html`中使用表单字段, 验证信息和消息闪现;
 5. 在`app/admin/views.py`中处理登录请求, 保存会话;
 6. 在`app/admin/views.py`中定义登录装饰器和访问控制.
+
+## Docker Install CentOS7
+
+几个有用的命令:
+
+```bash
+$ docker pull centos
+$ docker run --name mycentos -dti --privileged centos init
+$ docker exec -it mycentos /bin/bash  # 通过此命令进入centos交互式环境
+[root@d005552a43bb /]# mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.backup
+[root@d005552a43bb /]# vi /etc/yum.repos.d/CentOS-Base.repo
+将USTC的源粘贴在这里
+[root@d005552a43bb /]# yum makecache
+[root@d005552a43bb /]# yum update
+[root@d005552a43bb /]# exit
+$ docker stop mycentos
+$ docker start mycentos
+$ docker exec -it mycentos /bin/bash
+```
+
+## CentOS7 Install Python3.6
+
+`epel-release`包含了 EPEL 源的 GPG 密钥和软件源信息.
+`IUS`为 RHEL 和 CentOS 编译单独的包。
+
+```bash
+# yum install epel-release -y
+# yum install https://centos7.iuscommunity.org/ius-release.rpm -y
+# yum install python36 -y
+# yum install python36u-pip -y
+```
+
+## MySQL(MariaDB)
+
+```bash
+# yum install mariadb-server -y
+# mysqladmin -uroot password "密码"
+# mysql -uroot -p密码
+# vim /etc/my.cnf
+# mysqld
+character--set-server=utf8
+# systemctl restart mariadb.service
+```
+
+## Nginx
+
+```bash
+# yum install nginx -y
+# nginx
+# yun install net-tools -y
+# netstat -anptu | grep nginx
+```
