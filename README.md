@@ -447,11 +447,15 @@ $ docker exec -it mycentos /bin/bash
 
 ```bash
 # yum install mariadb-server -y
+# systemctl start mariadb.service
+# systemctl enable mariadb.service
 # mysqladmin -uroot password "密码"
 # mysql -uroot -p密码
+exit
+# yum install vim -y
 # vim /etc/my.cnf
 # mysqld
-character--set-server=utf8
+character-set-server=utf8
 # systemctl restart mariadb.service
 ```
 
