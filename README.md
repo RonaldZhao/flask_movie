@@ -418,7 +418,7 @@ def admin_list():
 
 ```bash
 $ docker pull centos
-$ docker run --name mycentos -dti --privileged centos init
+$ docker run --name mycentos -dti --privileged -p80:80 centos init
 $ docker exec -it mycentos /bin/bash  # 通过此命令进入centos交互式环境
 [root@d005552a43bb /]# mv /etc/yum.repos.d/CentOS-Base.repo /etc/yum.repos.d/CentOS-Base.repo.backup
 [root@d005552a43bb /]# vi /etc/yum.repos.d/CentOS-Base.repo
@@ -441,6 +441,10 @@ $ docker exec -it mycentos /bin/bash
 # yum install https://centos7.iuscommunity.org/ius-release.rpm -y
 # yum install python36 -y
 # yum install python36u-pip -y
+# cp /usr/bin/python36 /usr/bin/python3
+# cp /usr/bin/pip3.6 /usr/bin/pip3
+# python3 -m pip install --upgrade pip
+# pip install --upgrade setuptools
 ```
 
 ## MySQL(MariaDB)
@@ -454,7 +458,10 @@ $ docker exec -it mycentos /bin/bash
 exit
 # yum install vim -y
 # vim /etc/my.cnf
-# mysqld
+# 在文件最上面添加
+[client]
+default-character-set=utf8
+# 在[mysqld]下面添加
 character-set-server=utf8
 # systemctl restart mariadb.service
 ```
@@ -467,3 +474,5 @@ character-set-server=utf8
 # yun install net-tools -y
 # netstat -anptu | grep nginx
 ```
+
+此时在本地浏览器访问[localhost](http://127.0.0.1:80)即可看到`nginx`的欢迎页面(Fedora版).
