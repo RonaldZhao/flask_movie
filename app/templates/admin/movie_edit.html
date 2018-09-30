@@ -49,7 +49,7 @@
                             </div>
                             {% endfor %}
                             <div style="margin-top:5px;">
-                                <div id="moviecontainer"></div>
+                                <div id="dplayer"></div>
                             </div>
                         </div>
                         <div class="form-group">
@@ -150,38 +150,15 @@
 
 {% block js %}
 <!--播放页面-->
-<script src="{{ url_for('static', filename='jwplayer/jwplayer.js') }}"></script>
+<link rel="stylesheet" href="{{ url_for('static', filename='dplayer/DPlayer.min.css') }}">
+<script src="{{ url_for('static', filename='dplayer/DPlayer.min.js') }}"></script>
 <script type="text/javascript">
-    jwplayer.key = "P9VTqT/X6TSP4gi/hy1wy23BivBhjdzVjMeOaQ==";
-    jwplayer("moviecontainer").setup({
-        flashplayer: "{{ url_for('static', filename='jwplayer/jwplayer.flash.swf') }}",
-        playlist: [{
-            title: "{{ movie.title }}",
-            file: "{{ url_for('static', filename='uploads/'+movie.url) }}"
-        }],
-        modes: [{
-            type: "html5"
-        }, {
-            type: "flash",
-            src: "{{ url_for('static', filename='jwplayer/jwplayer.flash.swf') }}"
-        }, {
-            type: "download"
-        }],
-        skin: {
-            name: "bekle"
-            // name: "glow"
-            // name: "roundster"
-			// name: "stormtrooper"
-            // name: "vapor"
-            // name: "five"
-            // name: "six"
-            // name: "seven"
-            // name: "beelden"
+    const dp = new DPlayer({
+        element: document.getElementById('dplayer'),
+        screenshot: true,
+        video: {
+            url: "{{ url_for('static', filename='uploads/'+movie.url) }}",
         },
-        "playlist.position": "left",
-        "playlist.size": 200,
-        width: 640,
-        height: 360,
     });
     $(document).ready(function(){
         $('#input_release_time').datepicker({

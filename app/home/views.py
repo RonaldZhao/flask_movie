@@ -347,7 +347,6 @@ def dm():
         res = json.dumps(ret)
     if request.method == "POST":
         data = json.loads(request.get_data())
-        print("------------------->", data)
         msg = {
             "__v": 0,
             "author": data["author"],

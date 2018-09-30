@@ -129,40 +129,7 @@
 {% endblock %}
 
 {% block js %}
-<!--播放页面-->
-<script src="{{ url_for('static', filename='jwplayer/jwplayer.js') }}"></script>
-<script type="text/javascript">
-    jwplayer.key = "P9VTqT/X6TSP4gi/hy1wy23BivBhjdzVjMeOaQ==";
-    jwplayer("moviecontainer").setup({
-        flashplayer: "{{ url_for('static', filename='jwplayer/jwplayer.flash.swf') }}",
-        playlist: [{
-            file: "{{ url_for('static', filename='') }}",// TODO: 默认为空.当选择文件后使这里的视频显示为此视频
-            title: "DARKSIDE"
-        }],
-        modes: [{
-            type: "html5"
-        }, {
-            type: "flash",
-            src: "{{ url_for('static', filename='jwplayer/jwplayer.flash.swf') }}"
-        }, {
-            type: "download"
-        }],
-        skin: {
-            name: "bekle"
-            // name: "glow"
-            // name: "roundster"
-			// name: "stormtrooper"
-            // name: "vapor"
-            // name: "five"
-            // name: "six"
-            // name: "seven"
-            // name: "beelden"
-        },
-        "playlist.position": "left",
-        "playlist.size": 200,
-        width: 640,
-        height: 360,
-    });
+<script>
     $(document).ready(function(){
         $('#input_release_time').datepicker({
             autoclose: true,
