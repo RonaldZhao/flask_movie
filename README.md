@@ -455,7 +455,8 @@ $ docker exec -it mycentos /bin/bash
 # systemctl enable mariadb.service
 # mysqladmin -uroot password "密码"
 # mysql -uroot -p密码
-exit
+> create database movie;
+> exit
 # yum install vim -y
 # vim /etc/my.cnf
 # 在文件最上面添加
@@ -476,3 +477,31 @@ character-set-server=utf8
 ```
 
 此时在本地浏览器访问[localhost](http://127.0.0.1:80)即可看到`nginx`的欢迎页面(Fedora版).
+
+## Redis
+
+```bash
+# yum install redis -y
+# vim /etc/redis.conf
+将daemonize no改为daemonize yes
+# redis-server /etc/redis.conf
+# redis-cli shutdown  # 使用此命令关闭redis-server
+```
+
+## 上传文件
+
+使用如下命令将项目文件夹上传至docker容器内:
+
+```bash
+$ docker cp -a 项目文件夹路径 容器名称或ID全称:要拷贝到的容器内绝对路径
+```
+
+## 安装依赖
+
+```bash
+# pip install --upgrade flask
+# pip install --upgrade flask-sqlalchemy
+# pip install --upgrade PyMySQL
+# pip install --upgrade Flask-WTF
+# pip install --upgrade Flask-Redis
+```
