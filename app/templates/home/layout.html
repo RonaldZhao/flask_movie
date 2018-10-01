@@ -53,18 +53,21 @@
                 <li>
                     <a class="curlink" href="{{ url_for('home.index', page=1) }}"><span class="glyphicon glyphicon-film"></span>电影</a>
                 </li>
+                {% if session["user"] %}
+                <li>
+                    <a class="curlink" href="{{ url_for('home.user') }}"><span class="glyphicon glyphicon-user"></span>个人中心</a>
+                </li>
+                <li>
+                    <a class="curlink" href="{{ url_for('home.logout') }}"><span class="glyphicon glyphicon-log-out"></span>退出</a>
+                </li>
+                {% else %}
                 <li>
                     <a class="curlink" href="{{ url_for('home.login') }}"><span class="glyphicon glyphicon-log-in"></span>登录</a>
                 </li>
                 <li>
                     <a class="curlink" href="{{ url_for('home.register') }}"><span class="glyphicon glyphicon-plus"></span>注册</a>
                 </li>
-                <li>
-                    <a class="curlink" href="{{ url_for('home.logout') }}"><span class="glyphicon glyphicon-log-out"></span>退出</a>
-                </li>
-                <li>
-                    <a class="curlink" href="{{ url_for('home.user') }}"><span class="glyphicon glyphicon-user"></span>个人中心</a>
-                </li>
+                {% endif %}
             </ul>
         </div>
         <!--导航-->
